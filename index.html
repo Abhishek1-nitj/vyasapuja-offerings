@@ -41,6 +41,21 @@
       </div>
     </section>
 
+    <section class="edit-search-section">
+      <div class="edit-search-panel">
+        <div>
+          <span class="section-label">EDIT OFFERING</span>
+          <h2 class="section-title">Search your offering</h2>
+          <p class="search-help">If you want to edit your offering, type your name, phone number, or email. You will need your private edit code before saving changes.</p>
+        </div>
+        <form id="offeringSearchForm" class="search-form">
+          <input id="offeringSearchInput" class="form-control search-input" type="search" placeholder="Search by name, phone number, or email" autocomplete="off">
+          <button class="btn-submit-hero btn-submit-sm" type="submit"><span>Search</span></button>
+        </form>
+        <div id="searchResults" class="search-results hidden"></div>
+      </div>
+    </section>
+
     <!-- Submitted Offerings Section -->
     <section class="offerings-section">
       <div class="section-header">
@@ -94,6 +109,7 @@
       </div>
 
       <form id="offeringForm" class="modal-body" novalidate autocomplete="on">
+        <input type="hidden" id="editingOfferingId">
         <div class="form-row form-row-2">
           <div class="form-group">
             <label for="devoteeName" class="form-label">Devotee Name / Initiated Name</label>
@@ -199,6 +215,12 @@
           <span class="field-error" id="contentError"></span>
         </div>
 
+        <div class="form-group hidden" id="editCodeGroup">
+          <label for="editCodeInput" class="form-label">Private Edit Code</label>
+          <input id="editCodeInput" class="form-control" type="text" inputmode="numeric" maxlength="6" placeholder="Enter your 6-digit edit code">
+          <span class="field-error" id="editCodeError"></span>
+        </div>
+
         <div class="modal-footer">
           <button type="button" class="btn-cancel" id="cancelSubmissionBtn">Cancel</button>
           <button type="submit" class="btn-submit-hero btn-submit-sm" id="submitOfferingBtn">
@@ -207,6 +229,25 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="editCodeModal" role="dialog" aria-modal="true" aria-labelledby="editCodeTitle">
+    <div class="modal-card reader-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-eyebrow">SAVE THIS CODE</span>
+          <h3 id="editCodeTitle">Your offering was submitted</h3>
+        </div>
+        <button class="modal-close-btn" id="closeEditCodeModalBtn" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="search-help">Use this private code later to edit your offering. Do not share it publicly.</p>
+        <div class="edit-code-display" id="newEditCodeValue">000000</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-submit-hero btn-submit-sm" id="doneEditCodeBtn"><span>Done</span></button>
+      </div>
     </div>
   </div>
 

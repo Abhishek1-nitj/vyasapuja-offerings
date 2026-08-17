@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vyasapuja-offerings",
+  "pages_build_output_dir": ".",
+  "compatibility_date": "2026-08-17",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vyasapuja-offerings-db",
+      "database_id": "b7e5ee56-80c8-4648-ae20-d40f1185a40a"
+    }
+  ]
+}
