@@ -29,23 +29,41 @@
   <main class="main-content">
     
     <section class="primary-actions-section">
-      <div class="action-card action-card-dark">
-        <span class="banner-tag">SRI VYASA-PUJA</span>
-        <h2>Submit your offering</h2>
-        <button id="mainSubmitBtn" class="btn-submit-hero">
-          <span>Sign in to submit your offering</span>
-          <span class="hero-btn-arrow">→</span>
-        </button>
+      <div id="preSignInActions" class="pre-signin-actions">
+        <div class="action-card action-card-dark">
+          <span class="banner-tag">SRI VYASA-PUJA</span>
+          <h2>Submit your offering</h2>
+          <button id="mainSubmitBtn" class="btn-submit-hero">
+            <span>Sign in to submit your offering</span>
+            <span class="hero-btn-arrow">→</span>
+          </button>
+        </div>
+        <div class="action-card">
+          <span class="section-label">MY OFFERING</span>
+          <h2>Edit your offering</h2>
+          <button id="editMineBtn" class="btn-submit-hero btn-dark">
+            <span>Sign in to edit your offering</span>
+            <span class="hero-btn-arrow">→</span>
+          </button>
+        </div>
       </div>
-      <div class="action-card">
-        <span class="section-label">MY OFFERING</span>
-        <h2>Edit your offering</h2>
-        <button id="editMineBtn" class="btn-submit-hero btn-dark">
-          <span>Sign in to edit your offering</span>
-          <span class="hero-btn-arrow">→</span>
-        </button>
+      <div id="signedInPanel" class="signed-in-panel hidden">
+        <div class="signed-in-top">
+          <div class="signed-in-user">
+            <img id="signedInAvatar" class="signed-in-avatar" alt="">
+            <div>
+              <span class="section-label">SIGNED IN</span>
+              <h2 id="signedInName">Your offering</h2>
+              <p id="signedInEmail" class="search-help"></p>
+            </div>
+          </div>
+          <button id="signedInSubmitBtn" class="btn-submit-hero btn-dark">
+            <span>Submit another offering</span>
+            <span class="hero-btn-arrow">→</span>
+          </button>
+        </div>
+        <div id="myOfferingsPanel" class="my-offerings-panel"></div>
       </div>
-      <div id="myOfferingsPanel" class="my-offerings-panel hidden"></div>
     </section>
 
     <section class="public-search-section">
@@ -292,6 +310,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=20260817-signed-in-panel"></script>
 </body>
 </html>

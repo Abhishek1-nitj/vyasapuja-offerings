@@ -5,7 +5,9 @@
   const AuthState = { clientId: '', credential: '', email: '', name: '', ready: false, afterLogin: null };
   const $ = (id) => document.getElementById(id);
   const DOM = {
-    mainSubmitBtn: $('mainSubmitBtn'), editMineBtn: $('editMineBtn'), myOfferingsPanel: $('myOfferingsPanel'),
+    mainSubmitBtn: $('mainSubmitBtn'), editMineBtn: $('editMineBtn'), preSignInActions: $('preSignInActions'),
+    signedInPanel: $('signedInPanel'), signedInAvatar: $('signedInAvatar'), signedInName: $('signedInName'),
+    signedInEmail: $('signedInEmail'), signedInSubmitBtn: $('signedInSubmitBtn'), myOfferingsPanel: $('myOfferingsPanel'),
     totalOfferingsCountBadge: $('totalOfferingsCountBadge'), offeringsGrid: $('offeringsGrid'),
     emptyOfferingsState: $('emptyOfferingsState'), emptyStateSubmitBtn: $('emptyStateSubmitBtn'), paginationWrapper: $('paginationWrapper'),
     paginationInfo: $('paginationInfo'), paginationNumbers: $('paginationNumbers'), prevPageBtn: $('prevPageBtn'), nextPageBtn: $('nextPageBtn'),
@@ -69,16 +71,32 @@
     const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     AuthState.email = payload.email || '';
     AuthState.name = payload.name || '';
+    AuthState.picture = payload.picture || '';
     DOM.signedInBadge.textContent = `Signed in as ${AuthState.email}`;
     DOM.signedInBadge.classList.remove('hidden');
     if (!DOM.editingOfferingId.value && !DOM.devoteeEmail.value) DOM.devoteeEmail.value = AuthState.email;
     showToast('Google sign-in complete.');
     closeAuthModal();
+    renderSignedInState();
     if (AuthState.afterLogin) {
       const next = AuthState.afterLogin;
       AuthState.afterLogin = null;
       next();
     }
+  }
+
+  function renderSignedInState() {
+    DOM.preSignInActions.classList.add('hidden');
+    DOM.signedInPanel.classList.remove('hidden');
+    DOM.signedInName.textContent = AuthState.name || 'Your offering';
+    DOM.signedInEmail.textContent = AuthState.email;
+    if (AuthState.picture) {
+      DOM.signedInAvatar.src = AuthState.picture;
+      DOM.signedInAvatar.classList.remove('hidden');
+    } else {
+      DOM.signedInAvatar.classList.add('hidden');
+    }
+    loadMyOfferings();
   }
 
   function requireGoogle(next, message) {
@@ -120,6 +138,7 @@
     DOM.editMineBtn.addEventListener('click', () => {
       if (requireGoogle(loadMyOfferings, 'Sign in to edit your offering.')) loadMyOfferings();
     });
+    DOM.signedInSubmitBtn.addEventListener('click', () => openSubmissionModal());
     DOM.closeAuthModalBtn.addEventListener('click', closeAuthModal);
     DOM.closeSubmissionModalBtn.addEventListener('click', closeSubmissionModal);
     DOM.cancelSubmissionBtn.addEventListener('click', closeSubmissionModal);
@@ -240,7 +259,6 @@
   }
 
   async function loadMyOfferings() {
-    DOM.myOfferingsPanel.classList.remove('hidden');
     DOM.myOfferingsPanel.textContent = 'Loading your offering...';
     try {
       renderMyOfferings((await requestJson(`${API}/mine`)).offerings || []);
@@ -251,10 +269,14 @@
 
   function renderMyOfferings(offerings) {
     if (!offerings.length) {
-      DOM.myOfferingsPanel.textContent = 'No offering found for this Google account.';
+      DOM.myOfferingsPanel.innerHTML = '<p class="search-help">No offering found for this Google account.</p>';
       return;
     }
     DOM.myOfferingsPanel.innerHTML = '';
+    const title = document.createElement('div');
+    title.className = 'my-offerings-title';
+    title.innerHTML = `<span class="section-label">MY OFFERINGS</span><h3>${offerings.length === 1 ? 'Your offering' : 'Your past offerings'}</h3>`;
+    DOM.myOfferingsPanel.appendChild(title);
     offerings.forEach((offering) => {
       const row = document.createElement('div');
       row.className = 'search-result-item';
