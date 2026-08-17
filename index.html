@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=20260817-offering-list">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -65,20 +65,6 @@
       </div>
     </section>
 
-    <section class="public-search-section">
-      <div class="edit-search-panel">
-        <div>
-          <span class="section-label">SEARCH OFFERINGS</span>
-          <h2 class="section-title">Search offerings</h2>
-        </div>
-        <form id="offeringSearchForm" class="search-form">
-          <input id="offeringSearchInput" class="form-control search-input" type="search" placeholder="Search by name, phone number, or email" autocomplete="off">
-          <button class="btn-submit-hero btn-submit-sm" type="submit"><span>Search</span></button>
-        </form>
-        <div id="searchResults" class="search-results hidden"></div>
-      </div>
-    </section>
-
     <section class="center-summary-section">
       <div class="center-summary-panel">
         <div class="section-title-wrap">
@@ -97,7 +83,15 @@
         <span id="totalOfferingsCountBadge" class="count-pill">12 Offerings</span>
       </div>
 
-      <!-- Offerings Grid -->
+      <div class="edit-search-panel offerings-search-panel">
+        <form id="offeringSearchForm" class="search-form">
+          <input id="offeringSearchInput" class="form-control search-input" type="search" placeholder="Search offerings by name, phone number, or email" autocomplete="off">
+          <button class="btn-submit-hero btn-submit-sm" type="submit"><span>Search</span></button>
+        </form>
+        <div id="searchResults" class="search-results hidden"></div>
+      </div>
+
+      <!-- Offerings List -->
       <div class="offerings-grid" id="offeringsGrid">
         <!-- Rendered dynamically -->
       </div>

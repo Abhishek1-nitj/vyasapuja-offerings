@@ -239,10 +239,16 @@
     const card = document.createElement('article');
     card.className = 'offering-card';
     card.innerHTML = `
-      <div class="card-top"><span class="card-index">${String(index).padStart(2, '0')}</span><span class="card-center">${esc(cleanCenterName(offering.center))}</span></div>
-      <h3 class="card-author-name">${esc(offering.devoteeName)}</h3>
-      <p class="card-content-preview">${esc(createExcerpt(offering.content, 220))}</p>
-      <div class="card-footer"><span class="card-date">${formatDate(offering.createdAt)}</span><button class="btn-read-link">Read full offering -></button></div>`;
+      <span class="card-index">${String(index).padStart(2, '0')}</span>
+      <div class="offering-row-main">
+        <div class="offering-row-meta">
+          <h3 class="card-author-name">${esc(offering.devoteeName)}</h3>
+          <span class="card-center">${esc(cleanCenterName(offering.center))}</span>
+          <span class="card-date">${formatDate(offering.createdAt)}</span>
+        </div>
+        <p class="card-content-preview">${esc(createExcerpt(offering.content, 150))}</p>
+      </div>
+      <button class="btn-read-link">Read full offering -></button>`;
     card.addEventListener('click', () => openReaderModal(offering.id));
     card.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); openReaderModal(offering.id); });
     return card;
