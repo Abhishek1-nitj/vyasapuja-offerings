@@ -2,7 +2,7 @@
   'use strict';
   const API = '/api/offerings';
   const AppState = { offerings: [], currentPage: 1, pageSize: 9 };
-  const AuthState = { clientId: '', credential: '', email: '', name: '', ready: false };
+  const AuthState = { clientId: '', credential: '', email: '', name: '', ready: false, afterLogin: null };
   const $ = (id) => document.getElementById(id);
   const DOM = {
     mainSubmitBtn: $('mainSubmitBtn'), totalOfferingsCountBadge: $('totalOfferingsCountBadge'), offeringsGrid: $('offeringsGrid'),
@@ -16,7 +16,8 @@
     readerModal: $('readerModal'), closeReaderModalBtn: $('closeReaderModalBtn'), closeReaderFooterBtn: $('closeReaderFooterBtn'),
     readerOfferingNumber: $('readerOfferingNumber'), readerCenterBadge: $('readerCenterBadge'), readerDate: $('readerDate'), readerAuthorName: $('readerAuthorName'),
     readerAuthorCenter: $('readerAuthorCenter'), readerOfferingContent: $('readerOfferingContent'), copyOfferingLinkBtn: $('copyOfferingLinkBtn'),
-    toastContainer: $('toastContainer'), googleSignInButton: $('googleSignInButton'), signedInBadge: $('signedInBadge')
+    toastContainer: $('toastContainer'), authModal: $('authModal'), closeAuthModalBtn: $('closeAuthModalBtn'),
+    googleSignInButton: $('googleSignInButton'), signedInBadge: $('signedInBadge')
   };
 
   async function init() {
@@ -71,12 +72,31 @@
     DOM.signedInBadge.classList.remove('hidden');
     if (!DOM.editingOfferingId.value && !DOM.devoteeEmail.value) DOM.devoteeEmail.value = AuthState.email;
     showToast('Google sign-in complete.');
+    closeAuthModal();
+    if (AuthState.afterLogin) {
+      const next = AuthState.afterLogin;
+      AuthState.afterLogin = null;
+      next();
+    }
   }
 
-  function requireGoogle() {
+  function requireGoogle(next) {
     if (AuthState.credential) return true;
-    showToast(AuthState.ready ? 'Please sign in with Google first.' : 'Google login is not configured yet.');
+    AuthState.afterLogin = next || null;
+    openAuthModal();
     return false;
+  }
+
+  function openAuthModal() {
+    DOM.signedInBadge.textContent = AuthState.ready ? '' : 'Google login is not configured yet.';
+    DOM.signedInBadge.classList.toggle('hidden', AuthState.ready);
+    DOM.authModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeAuthModal() {
+    DOM.authModal.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
   async function loadOfferings() {
@@ -89,8 +109,13 @@
   }
 
   function bindEvents() {
-    DOM.mainSubmitBtn.addEventListener('click', () => openSubmissionModal());
-    DOM.emptyStateSubmitBtn.addEventListener('click', () => openSubmissionModal());
+    DOM.mainSubmitBtn.addEventListener('click', () => {
+      if (requireGoogle(() => openSubmissionModal())) openSubmissionModal();
+    });
+    DOM.emptyStateSubmitBtn.addEventListener('click', () => {
+      if (requireGoogle(() => openSubmissionModal())) openSubmissionModal();
+    });
+    DOM.closeAuthModalBtn.addEventListener('click', closeAuthModal);
     DOM.closeSubmissionModalBtn.addEventListener('click', closeSubmissionModal);
     DOM.cancelSubmissionBtn.addEventListener('click', closeSubmissionModal);
     DOM.centerSelect.addEventListener('change', toggleCustomCenter);
@@ -103,8 +128,8 @@
     DOM.copyOfferingLinkBtn.addEventListener('click', copyOfferingLink);
     DOM.prevPageBtn.addEventListener('click', () => changePage(-1));
     DOM.nextPageBtn.addEventListener('click', () => changePage(1));
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSubmissionModal(); closeReaderModal(); } });
-    [DOM.submissionModal, DOM.readerModal].forEach((modal) => modal.addEventListener('click', (e) => {
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAuthModal(); closeSubmissionModal(); closeReaderModal(); } });
+    [DOM.authModal, DOM.submissionModal, DOM.readerModal].forEach((modal) => modal.addEventListener('click', (e) => {
       if (e.target === modal) { modal.classList.add('hidden'); document.body.style.overflow = ''; }
     }));
   }
@@ -189,7 +214,7 @@
   }
 
   async function openOwnedOffering(id) {
-    if (!requireGoogle()) return;
+    if (!requireGoogle(() => openOwnedOffering(id))) return;
     try {
       openSubmissionModal((await requestJson(`${API}/${id}`)).offering);
     } catch (e) {
