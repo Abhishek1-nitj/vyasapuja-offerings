@@ -275,16 +275,31 @@
     DOM.myOfferingsPanel.innerHTML = '';
     const title = document.createElement('div');
     title.className = 'my-offerings-title';
-    title.innerHTML = `<span class="section-label">MY OFFERINGS</span><h3>${offerings.length === 1 ? 'Your offering' : 'Your past offerings'}</h3>`;
+    title.innerHTML = `<span class="section-label">YOUR OFFERINGS</span><h3>${offerings.length === 1 ? 'Your offering' : 'Your past offerings'}</h3>`;
     DOM.myOfferingsPanel.appendChild(title);
     offerings.forEach((offering) => {
       const row = document.createElement('div');
       row.className = 'search-result-item';
-      row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - #${offering.offeringNumber}</span></div><div class="search-result-actions"><button class="page-nav-btn">Edit</button></div>`;
-      row.querySelector('button').addEventListener('click', () => openSubmissionModal(offering));
+      row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - #${offering.offeringNumber}</span></div><div class="search-result-actions"><button class="page-nav-btn" data-action="edit">Edit</button><button class="page-nav-btn" data-action="view">View</button><button class="page-nav-btn btn-danger" data-action="delete">Delete</button></div>`;
+      row.querySelector('[data-action="edit"]').addEventListener('click', () => openSubmissionModal(offering));
+      row.querySelector('[data-action="view"]').addEventListener('click', () => openReaderFromOffering(offering));
+      row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteOffering(offering));
       DOM.myOfferingsPanel.appendChild(row);
     });
-    if (offerings.length === 1) openSubmissionModal(offerings[0]);
+  }
+
+  async function deleteOffering(offering) {
+    const ok = window.confirm(`Delete offering #${offering.offeringNumber}? This cannot be undone.`);
+    if (!ok) return;
+    try {
+      await requestJson(`${API}/${offering.id}`, { method: 'DELETE' });
+      showToast('Offering deleted.');
+      AppState.currentPage = 1;
+      await loadOfferings();
+      await loadMyOfferings();
+    } catch (e) {
+      showToast(e.message);
+    }
   }
 
   async function openOwnedOffering(id) {

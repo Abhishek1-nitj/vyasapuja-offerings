@@ -88,3 +88,19 @@ export async function onRequestPut({ request, env, params }) {
 
   return json({ ok: true });
 }
+
+export async function onRequestDelete({ request, env, params }) {
+  let owner;
+  try {
+    owner = await verifyGoogle(request, env);
+  } catch (e) {
+    return json({ error: e.message }, 401);
+  }
+
+  const existing = await env.DB.prepare('SELECT owner_google_sub FROM offerings WHERE id = ?').bind(params.id).first();
+  if (!existing) return json({ error: 'Offering not found.' }, 404);
+  if (!owns(existing, owner)) return json({ error: 'Only the Google account that submitted this offering can delete it.' }, 403);
+
+  await env.DB.prepare('DELETE FROM offerings WHERE id = ?').bind(params.id).run();
+  return json({ ok: true });
+}

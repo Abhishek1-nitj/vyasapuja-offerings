@@ -612,6 +612,16 @@ body {
   background: var(--bg-card);
 }
 
+.page-nav-btn.btn-danger {
+  color: #B91C1C;
+  border-color: rgba(185, 28, 28, 0.3);
+}
+
+.page-nav-btn.btn-danger:hover {
+  background: #FFF5F5;
+  border-color: #B91C1C;
+}
+
 .page-nav-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
