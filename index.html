@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Srila Prabhupada Vyasa-puja Offerings</title>
+  <meta name="description" content="Online submission and reading portal for Srila Prabhupada Vyasa-puja offerings.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Elegant Minimalist Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <span class="brand-eyebrow">HOMAGE PORTAL</span>
+        <h1 class="brand-title">Vyasa-puja Offerings</h1>
+      </div>
+      <div class="header-right">
+        <span class="brand-dedication">His Divine Grace A.C. Bhaktivedanta Swami Prabhupada</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    
+    <!-- Hero / Submit Action Bar -->
+    <section class="submit-action-section">
+      <div class="submit-banner">
+        <div class="banner-text-wrap">
+          <span class="banner-tag">SRI VYASA-PUJA</span>
+          <h2 class="banner-heading">Offerings of Gratitude & Devotion</h2>
+        </div>
+        <button id="mainSubmitBtn" class="btn-submit-hero">
+          <span>Submit Your Offering</span>
+          <span class="hero-btn-arrow">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Submitted Offerings Section -->
+    <section class="offerings-section">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-label">JOURNAL</span>
+          <h2 class="section-title">Submitted Offerings</h2>
+        </div>
+        <span id="totalOfferingsCountBadge" class="count-pill">12 Offerings</span>
+      </div>
+
+      <!-- Offerings Grid -->
+      <div class="offerings-grid" id="offeringsGrid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyOfferingsState" class="empty-state hidden">
+        <div class="empty-icon">❖</div>
+        <h3>No offerings submitted yet</h3>
+        <p>Be the first to present your homage at the lotus feet of His Divine Grace.</p>
+        <button id="emptyStateSubmitBtn" class="btn-submit-hero btn-submit-sm">
+          <span>Submit Offering</span>
+          <span>→</span>
+        </button>
+      </div>
+
+      <!-- Pagination Bar -->
+      <div class="pagination-wrapper" id="paginationWrapper">
+        <div class="pagination-info" id="paginationInfo">Showing offerings</div>
+        <div class="pagination-actions">
+          <button id="prevPageBtn" class="page-nav-btn" disabled>← Previous</button>
+          <div id="paginationNumbers" class="pagination-numbers"></div>
+          <button id="nextPageBtn" class="page-nav-btn">Next →</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal 1: Offering Submission Modal -->
+  <div class="modal-overlay hidden" id="submissionModal" role="dialog" aria-modal="true" aria-labelledby="submissionModalTitle">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-eyebrow">SUBMISSION</span>
+          <h3 id="submissionModalTitle">Submit Your Offering</h3>
+        </div>
+        <button class="modal-close-btn" id="closeSubmissionModalBtn" aria-label="Close modal">✕</button>
+      </div>
+
+      <form id="offeringForm" class="modal-body" novalidate autocomplete="on">
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label for="devoteeName" class="form-label">Devotee Name / Initiated Name</label>
+            <input 
+              type="text" 
+              id="devoteeName" 
+              name="name" 
+              class="form-control" 
+              placeholder="e.g. Radheshyam Das" 
+              autocomplete="name" 
+              required
+            >
+            <span class="field-error" id="devoteeNameError"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="centerSelect" class="form-label">Center</label>
+            <select id="centerSelect" name="center" class="form-control" required>
+              <option value="" disabled selected>Select center...</option>
+              <option value="IBC AECS Layout">IBC AECS Layout</option>
+              <option value="IBC Inner Circle">IBC Inner Circle</option>
+              <option value="IBC Kannamangala">IBC Kannamangala</option>
+              <option value="IBC Panathur">IBC Panathur</option>
+              <option value="IBC Kaggadaspura">IBC Kaggadaspura</option>
+              <option value="IBC Sarjapur">IBC Sarjapur</option>
+              <option value="IBC Channasandra">IBC Channasandra</option>
+              <option value="IBC Petanahalli">IBC Petanahalli</option>
+              <option value="IBC Marathahalli">IBC Marathahalli</option>
+              <option value="IBC Indiranagar">IBC Indiranagar</option>
+              <option value="IBC Attibele">IBC Attibele</option>
+              <option value="IBC Doddanekundi">IBC Doddanekundi</option>
+              <option value="Modadruma BACE">Modadruma BACE</option>
+              <option value="Godrum BACE">Godrum BACE</option>
+              <option value="Panathur BACE">Panathur BACE</option>
+              <option value="Panathur Lotus BACE">Panathur Lotus BACE</option>
+              <option value="Antardvipa BACE">Antardvipa BACE</option>
+              <option value="Rudradvipa BACE">Rudradvipa BACE</option>
+              <option value="UVCE College BACE">UVCE College BACE</option>
+              <option value="Godrum Hopeform BACE">Godrum Hopeform BACE</option>
+              <option value="Bellandur BACE">Bellandur BACE</option>
+              <option value="__OTHER__">+ Other / Custom Center</option>
+            </select>
+            <div id="customCenterGroup" class="custom-center-input hidden">
+              <input 
+                type="text" 
+                id="customCenterName" 
+                class="form-control mt-2" 
+                placeholder="Enter center name..."
+              >
+            </div>
+            <span class="field-error" id="centerError"></span>
+          </div>
+        </div>
+
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label for="devoteeEmail" class="form-label">Email Address</label>
+            <input 
+              type="email" 
+              id="devoteeEmail" 
+              name="email" 
+              class="form-control" 
+              placeholder="devotee@example.com" 
+              autocomplete="email" 
+              required
+            >
+            <span class="field-error" id="emailError"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="devoteePhone" class="form-label">Phone Number (10 digit)</label>
+            <div class="phone-input-group">
+              <span class="phone-prefix">+91</span>
+              <input 
+                type="tel" 
+                id="devoteePhone" 
+                name="tel" 
+                class="form-control phone-input-field" 
+                placeholder="98765 43210" 
+                maxlength="10" 
+                pattern="[0-9]{10}"
+                autocomplete="tel-national" 
+                required
+              >
+            </div>
+            <span class="field-error" id="phoneError"></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-counter">
+            <label for="offeringContent" class="form-label">Your Offering</label>
+            <span class="word-counter-badge" id="wordCounterBadge">0 words</span>
+          </div>
+          <textarea 
+            id="offeringContent" 
+            name="offeringContent" 
+            class="form-control offering-textarea" 
+            rows="8" 
+            placeholder="Write your prayers, glorification, and heartfelt realizations here..."
+            required
+          ></textarea>
+          <span class="field-error" id="contentError"></span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" id="cancelSubmissionBtn">Cancel</button>
+          <button type="submit" class="btn-submit-hero btn-submit-sm" id="submitOfferingBtn">
+            <span>Submit Offering</span>
+            <span>→</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Full Offering Reader Modal -->
+  <div class="modal-overlay hidden" id="readerModal" role="dialog" aria-modal="true" aria-labelledby="readerAuthorName">
+    <div class="modal-card reader-modal-card">
+      <div class="modal-header reader-header">
+        <div class="reader-meta-top">
+          <span class="reader-num" id="readerOfferingNumber">01</span>
+          <span class="reader-divider-dot">·</span>
+          <span class="reader-center" id="readerCenterBadge">IBC AECS Layout</span>
+          <span class="reader-divider-dot">·</span>
+          <span class="reader-date" id="readerDate">Aug 17, 2026</span>
+        </div>
+        <button class="modal-close-btn" id="closeReaderModalBtn" aria-label="Close reader">✕</button>
+      </div>
+
+      <div class="modal-body reader-modal-body">
+        <div class="reader-author-section">
+          <h2 id="readerAuthorName" class="reader-author-title">Devotee Name</h2>
+          <span id="readerAuthorCenter" class="reader-location-sub">IBC AECS Layout</span>
+        </div>
+
+        <div class="reader-ornament">❖ ❖ ❖</div>
+
+        <div class="reader-prose" id="readerOfferingContent">
+          <!-- Full content injected here -->
+        </div>
+      </div>
+
+      <div class="modal-footer reader-footer">
+        <button id="copyOfferingLinkBtn" class="btn-cancel">
+          Copy Link
+        </button>
+        <button class="btn-submit-hero btn-submit-sm" id="closeReaderFooterBtn">
+          <span>Done</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
