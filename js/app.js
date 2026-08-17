@@ -7,7 +7,7 @@
   const DOM = {
     mainSubmitBtn: $('mainSubmitBtn'), editMineBtn: $('editMineBtn'), preSignInActions: $('preSignInActions'),
     signedInPanel: $('signedInPanel'), signedInAvatar: $('signedInAvatar'), signedInName: $('signedInName'),
-    signedInEmail: $('signedInEmail'), signedInSubmitBtn: $('signedInSubmitBtn'), myOfferingsPanel: $('myOfferingsPanel'),
+    signedInEmail: $('signedInEmail'), signedInSubmitBtn: $('signedInSubmitBtn'), logoutBtn: $('logoutBtn'), myOfferingsPanel: $('myOfferingsPanel'),
     totalOfferingsCountBadge: $('totalOfferingsCountBadge'), offeringsGrid: $('offeringsGrid'),
     emptyOfferingsState: $('emptyOfferingsState'), emptyStateSubmitBtn: $('emptyStateSubmitBtn'), paginationWrapper: $('paginationWrapper'),
     paginationInfo: $('paginationInfo'), paginationNumbers: $('paginationNumbers'), prevPageBtn: $('prevPageBtn'), nextPageBtn: $('nextPageBtn'),
@@ -102,6 +102,25 @@
     loadMyOfferings();
   }
 
+  function logout() {
+    if (AuthState.email && window.google?.accounts?.id) google.accounts.id.revoke(AuthState.email, () => {});
+    AuthState.credential = '';
+    AuthState.email = '';
+    AuthState.name = '';
+    AuthState.picture = '';
+    AuthState.afterLogin = null;
+    DOM.preSignInActions.classList.remove('hidden');
+    DOM.signedInPanel.classList.add('hidden');
+    DOM.signedInBadge.classList.add('hidden');
+    DOM.myOfferingsPanel.innerHTML = '';
+    DOM.signedInEmail.textContent = '';
+    DOM.signedInAvatar.removeAttribute('src');
+    DOM.devoteeEmail.value = '';
+    closeSubmissionModal();
+    closeAuthModal();
+    showToast('Logged out.');
+  }
+
   function requireGoogle(next, message) {
     if (AuthState.credential) return true;
     AuthState.afterLogin = next || null;
@@ -143,6 +162,7 @@
       if (requireGoogle(loadMyOfferings, 'Sign in to edit your offering.')) loadMyOfferings();
     });
     DOM.signedInSubmitBtn.addEventListener('click', () => openSubmissionModal());
+    DOM.logoutBtn.addEventListener('click', logout);
     DOM.closeAuthModalBtn.addEventListener('click', closeAuthModal);
     DOM.closeSubmissionModalBtn.addEventListener('click', closeSubmissionModal);
     DOM.cancelSubmissionBtn.addEventListener('click', closeSubmissionModal);
