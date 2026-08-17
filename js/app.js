@@ -16,6 +16,7 @@
     submitOfferingBtn: $('submitOfferingBtn'), devoteeName: $('devoteeName'), centerSelect: $('centerSelect'), customCenterGroup: $('customCenterGroup'),
     customCenterName: $('customCenterName'), devoteeEmail: $('devoteeEmail'), devoteePhone: $('devoteePhone'), offeringContent: $('offeringContent'),
     wordCounterBadge: $('wordCounterBadge'), searchForm: $('offeringSearchForm'), searchInput: $('offeringSearchInput'), searchResults: $('searchResults'),
+    centerSummaryGrid: $('centerSummaryGrid'),
     readerModal: $('readerModal'), closeReaderModalBtn: $('closeReaderModalBtn'), closeReaderFooterBtn: $('closeReaderFooterBtn'),
     readerOfferingNumber: $('readerOfferingNumber'), readerCenterBadge: $('readerCenterBadge'), readerDate: $('readerDate'), readerAuthorName: $('readerAuthorName'),
     readerAuthorCenter: $('readerAuthorCenter'), readerOfferingContent: $('readerOfferingContent'), copyOfferingLinkBtn: $('copyOfferingLinkBtn'),
@@ -88,7 +89,7 @@
   function renderSignedInState() {
     DOM.preSignInActions.classList.add('hidden');
     DOM.signedInPanel.classList.remove('hidden');
-    DOM.signedInName.textContent = AuthState.name || 'Your offering';
+    DOM.signedInName.textContent = 'My Offerings';
     DOM.signedInEmail.textContent = AuthState.email;
     if (AuthState.picture) {
       DOM.signedInAvatar.src = AuthState.picture;
@@ -126,6 +127,7 @@
       showToast(e.message);
     }
     renderFeedAndPagination();
+    renderCenterSummary();
   }
 
   function bindEvents() {
@@ -182,6 +184,26 @@
     DOM.prevPageBtn.disabled = AppState.currentPage === 1;
     DOM.nextPageBtn.disabled = AppState.currentPage === totalPages;
     renderPaginationNumbers(totalPages);
+  }
+
+  function renderCenterSummary() {
+    const counts = new Map();
+    AppState.offerings.forEach((offering) => {
+      const center = cleanCenterName(offering.center) || 'Other';
+      counts.set(center, (counts.get(center) || 0) + 1);
+    });
+    const items = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    DOM.centerSummaryGrid.innerHTML = '';
+    if (!items.length) {
+      DOM.centerSummaryGrid.innerHTML = '<p class="search-help">No center-wise offerings yet.</p>';
+      return;
+    }
+    items.forEach(([center, count]) => {
+      const card = document.createElement('div');
+      card.className = 'center-summary-item';
+      card.innerHTML = `<span>${esc(center)}</span><strong>${count}</strong>`;
+      DOM.centerSummaryGrid.appendChild(card);
+    });
   }
 
   function cardFor(offering, index) {
@@ -275,7 +297,7 @@
     DOM.myOfferingsPanel.innerHTML = '';
     const title = document.createElement('div');
     title.className = 'my-offerings-title';
-    title.innerHTML = `<span class="section-label">YOUR OFFERINGS</span><h3>${offerings.length === 1 ? 'Your offering' : 'Your past offerings'}</h3>`;
+    title.innerHTML = '<span class="section-label">MY OFFERINGS</span><h3>My Offerings</h3>';
     DOM.myOfferingsPanel.appendChild(title);
     offerings.forEach((offering) => {
       const row = document.createElement('div');
