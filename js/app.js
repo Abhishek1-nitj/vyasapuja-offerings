@@ -2,6 +2,7 @@
   'use strict';
   const API = '/api/offerings';
   const AppState = { offerings: [], currentPage: 1, pageSize: 9 };
+  const AuthState = { clientId: '', credential: '', email: '', name: '', ready: false };
   const $ = (id) => document.getElementById(id);
   const DOM = {
     mainSubmitBtn: $('mainSubmitBtn'), totalOfferingsCountBadge: $('totalOfferingsCountBadge'), offeringsGrid: $('offeringsGrid'),
@@ -11,26 +12,71 @@
     offeringForm: $('offeringForm'), editingOfferingId: $('editingOfferingId'), submissionModalTitle: $('submissionModalTitle'),
     submitOfferingBtn: $('submitOfferingBtn'), devoteeName: $('devoteeName'), centerSelect: $('centerSelect'), customCenterGroup: $('customCenterGroup'),
     customCenterName: $('customCenterName'), devoteeEmail: $('devoteeEmail'), devoteePhone: $('devoteePhone'), offeringContent: $('offeringContent'),
-    wordCounterBadge: $('wordCounterBadge'), editCodeGroup: $('editCodeGroup'), editCodeInput: $('editCodeInput'), searchForm: $('offeringSearchForm'),
-    searchInput: $('offeringSearchInput'), searchResults: $('searchResults'), readerModal: $('readerModal'), closeReaderModalBtn: $('closeReaderModalBtn'),
-    closeReaderFooterBtn: $('closeReaderFooterBtn'), readerOfferingNumber: $('readerOfferingNumber'), readerCenterBadge: $('readerCenterBadge'),
-    readerDate: $('readerDate'), readerAuthorName: $('readerAuthorName'), readerAuthorCenter: $('readerAuthorCenter'),
-    readerOfferingContent: $('readerOfferingContent'), copyOfferingLinkBtn: $('copyOfferingLinkBtn'), toastContainer: $('toastContainer'),
-    editCodeModal: $('editCodeModal'), closeEditCodeModalBtn: $('closeEditCodeModalBtn'), doneEditCodeBtn: $('doneEditCodeBtn'),
-    newEditCodeValue: $('newEditCodeValue')
+    wordCounterBadge: $('wordCounterBadge'), searchForm: $('offeringSearchForm'), searchInput: $('offeringSearchInput'), searchResults: $('searchResults'),
+    readerModal: $('readerModal'), closeReaderModalBtn: $('closeReaderModalBtn'), closeReaderFooterBtn: $('closeReaderFooterBtn'),
+    readerOfferingNumber: $('readerOfferingNumber'), readerCenterBadge: $('readerCenterBadge'), readerDate: $('readerDate'), readerAuthorName: $('readerAuthorName'),
+    readerAuthorCenter: $('readerAuthorCenter'), readerOfferingContent: $('readerOfferingContent'), copyOfferingLinkBtn: $('copyOfferingLinkBtn'),
+    toastContainer: $('toastContainer'), googleSignInButton: $('googleSignInButton'), signedInBadge: $('signedInBadge')
   };
 
   async function init() {
     bindEvents();
+    await setupGoogle();
     await loadOfferings();
     checkUrlHashForOffering();
   }
 
-  async function requestJson(url, options) {
-    const res = await fetch(url, { headers: { 'content-type': 'application/json' }, ...options });
+  async function requestJson(url, options = {}) {
+    const headers = { 'content-type': 'application/json', ...(options.headers || {}) };
+    if (AuthState.credential) headers.authorization = `Bearer ${AuthState.credential}`;
+    const res = await fetch(url, { ...options, headers });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Request failed.');
     return data;
+  }
+
+  async function setupGoogle() {
+    try {
+      AuthState.clientId = (await requestJson('/api/auth/config')).googleClientId || '';
+      if (!AuthState.clientId || AuthState.clientId === 'REPLACE_WITH_GOOGLE_CLIENT_ID') {
+        DOM.signedInBadge.textContent = 'Google login not configured';
+        DOM.signedInBadge.classList.remove('hidden');
+        return;
+      }
+      await waitForGoogle();
+      google.accounts.id.initialize({ client_id: AuthState.clientId, callback: handleGoogleCredential });
+      google.accounts.id.renderButton(DOM.googleSignInButton, { theme: 'outline', size: 'large', width: 260 });
+      AuthState.ready = true;
+    } catch (e) {
+      showToast('Google login could not load.');
+    }
+  }
+
+  function waitForGoogle() {
+    return new Promise((resolve, reject) => {
+      let tries = 0;
+      const timer = setInterval(() => {
+        if (window.google?.accounts?.id) { clearInterval(timer); resolve(); }
+        if (++tries > 60) { clearInterval(timer); reject(new Error('Google unavailable')); }
+      }, 100);
+    });
+  }
+
+  function handleGoogleCredential(response) {
+    AuthState.credential = response.credential;
+    const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    AuthState.email = payload.email || '';
+    AuthState.name = payload.name || '';
+    DOM.signedInBadge.textContent = `Signed in as ${AuthState.email}`;
+    DOM.signedInBadge.classList.remove('hidden');
+    if (!DOM.editingOfferingId.value && !DOM.devoteeEmail.value) DOM.devoteeEmail.value = AuthState.email;
+    showToast('Google sign-in complete.');
+  }
+
+  function requireGoogle() {
+    if (AuthState.credential) return true;
+    showToast(AuthState.ready ? 'Please sign in with Google first.' : 'Google login is not configured yet.');
+    return false;
   }
 
   async function loadOfferings() {
@@ -49,19 +95,16 @@
     DOM.cancelSubmissionBtn.addEventListener('click', closeSubmissionModal);
     DOM.centerSelect.addEventListener('change', toggleCustomCenter);
     DOM.devoteePhone.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
-    DOM.editCodeInput.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
     DOM.offeringContent.addEventListener('input', updateWordCounter);
     DOM.offeringForm.addEventListener('submit', handleFormSubmit);
     DOM.searchForm.addEventListener('submit', handleSearch);
     DOM.closeReaderModalBtn.addEventListener('click', closeReaderModal);
     DOM.closeReaderFooterBtn.addEventListener('click', closeReaderModal);
     DOM.copyOfferingLinkBtn.addEventListener('click', copyOfferingLink);
-    DOM.closeEditCodeModalBtn.addEventListener('click', closeEditCodeModal);
-    DOM.doneEditCodeBtn.addEventListener('click', closeEditCodeModal);
     DOM.prevPageBtn.addEventListener('click', () => changePage(-1));
     DOM.nextPageBtn.addEventListener('click', () => changePage(1));
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSubmissionModal(); closeReaderModal(); closeEditCodeModal(); } });
-    [DOM.submissionModal, DOM.readerModal, DOM.editCodeModal].forEach((modal) => modal.addEventListener('click', (e) => {
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSubmissionModal(); closeReaderModal(); } });
+    [DOM.submissionModal, DOM.readerModal].forEach((modal) => modal.addEventListener('click', (e) => {
       if (e.target === modal) { modal.classList.add('hidden'); document.body.style.overflow = ''; }
     }));
   }
@@ -140,13 +183,23 @@
       const row = document.createElement('div');
       row.className = 'search-result-item';
       row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - ${esc(offering.emailMasked)} - ${esc(offering.phoneMasked)}</span></div><button class="page-nav-btn">Edit</button>`;
-      row.querySelector('button').addEventListener('click', () => openSubmissionModal(offering));
+      row.querySelector('button').addEventListener('click', () => openOwnedOffering(offering.id));
       DOM.searchResults.appendChild(row);
     });
   }
 
+  async function openOwnedOffering(id) {
+    if (!requireGoogle()) return;
+    try {
+      openSubmissionModal((await requestJson(`${API}/${id}`)).offering);
+    } catch (e) {
+      showToast(e.message);
+    }
+  }
+
   async function handleFormSubmit(e) {
     e.preventDefault();
+    if (!requireGoogle()) return;
     resetFormErrors();
     const payload = getFormPayload();
     const error = validate(payload);
@@ -157,9 +210,7 @@
         await requestJson(`${API}/${DOM.editingOfferingId.value}`, { method: 'PUT', body: JSON.stringify(payload) });
         showToast('Offering updated.');
       } else {
-        const data = await requestJson(API, { method: 'POST', body: JSON.stringify(payload) });
-        DOM.newEditCodeValue.textContent = data.editCode;
-        DOM.editCodeModal.classList.remove('hidden');
+        await requestJson(API, { method: 'POST', body: JSON.stringify(payload) });
         showToast('Offering submitted.');
       }
       closeSubmissionModal();
@@ -178,13 +229,11 @@
       center,
       email: DOM.devoteeEmail.value.trim(),
       phone: DOM.devoteePhone.value.replace(/\D/g, ''),
-      content: DOM.offeringContent.value.trim(),
-      editCode: DOM.editCodeInput.value.trim()
+      content: DOM.offeringContent.value.trim()
     };
   }
 
   function validate(p) {
-    if (DOM.editingOfferingId.value && !p.editCode) return { id: 'editCodeError', el: DOM.editCodeInput, message: 'Please enter your edit code.' };
     if (!p.devoteeName) return { id: 'devoteeNameError', el: DOM.devoteeName, message: 'Please enter your name.' };
     if (!p.center) return { id: 'centerError', el: DOM.centerSelect, message: 'Please select your center.' };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return { id: 'emailError', el: DOM.devoteeEmail, message: 'Please enter a valid email.' };
@@ -201,8 +250,7 @@
     DOM.editingOfferingId.value = isEdit ? offering.id : '';
     DOM.submissionModalTitle.textContent = isEdit ? 'Edit Your Offering' : 'Submit Your Offering';
     DOM.submitOfferingBtn.querySelector('span').textContent = isEdit ? 'Save Changes' : 'Submit Offering';
-    DOM.editCodeGroup.classList.toggle('hidden', !isEdit);
-    if (isEdit) fillForm(offering);
+    if (isEdit) fillForm(offering); else if (AuthState.email) DOM.devoteeEmail.value = AuthState.email;
     updateWordCounter();
     DOM.submissionModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -212,10 +260,9 @@
   function fillForm(o) {
     DOM.devoteeName.value = o.devoteeName || '';
     setCenter(o.center || '');
-    DOM.devoteeEmail.value = '';
-    DOM.devoteePhone.value = '';
+    DOM.devoteeEmail.value = o.email || '';
+    DOM.devoteePhone.value = (o.phone || '').replace(/\D/g, '').slice(-10);
     DOM.offeringContent.value = o.content || '';
-    DOM.editCodeInput.value = '';
   }
 
   function setCenter(center) {
@@ -266,7 +313,6 @@
     document.body.style.overflow = '';
     if (window.location.hash.startsWith('#offering-')) history.replaceState(null, null, ' ');
   }
-  function closeEditCodeModal() { DOM.editCodeModal.classList.add('hidden'); document.body.style.overflow = ''; }
   function copyOfferingLink() {
     const currentUrl = window.location.href.split('#')[0] + window.location.hash;
     navigator.clipboard?.writeText(currentUrl).then(() => showToast('Link copied to clipboard')).catch(() => showToast(currentUrl));

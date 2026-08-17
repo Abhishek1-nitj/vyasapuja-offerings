@@ -7,10 +7,18 @@ const json = (data, status = 200) =>
 const countWords = (s) => (s || '').trim().split(/\s+/).filter(Boolean).length;
 const digits = (s) => (s || '').replace(/\D/g, '');
 
-async function hashCode(id, code) {
-  const bytes = new TextEncoder().encode(`${id}:${code}`);
-  const hash = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, '0')).join('');
+async function verifyGoogle(request, env) {
+  const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!token) throw new Error('Please sign in with Google.');
+  if (!env.GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_ID === 'REPLACE_WITH_GOOGLE_CLIENT_ID') {
+    throw new Error('Google login is not configured yet.');
+  }
+  const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
+  const profile = await res.json().catch(() => ({}));
+  if (!res.ok || profile.aud !== env.GOOGLE_CLIENT_ID || profile.email_verified !== 'true') {
+    throw new Error('Google sign-in could not be verified.');
+  }
+  return { sub: profile.sub, email: String(profile.email || '').toLowerCase(), name: profile.name || '' };
 }
 
 function publicOffering(row) {
@@ -49,13 +57,18 @@ export async function onRequestGet({ env }) {
 }
 
 export async function onRequestPost({ request, env }) {
+  let owner;
+  try {
+    owner = await verifyGoogle(request, env);
+  } catch (e) {
+    return json({ error: e.message }, 401);
+  }
   const body = await request.json().catch(() => ({}));
   const error = validate(body);
   if (error) return json({ error }, 400);
 
   const max = await env.DB.prepare('SELECT COALESCE(MAX(offering_number), 100) AS n FROM offerings').first();
   const id = `off-${crypto.randomUUID()}`;
-  const editCode = String(Math.floor(100000 + Math.random() * 900000));
   const phoneDigits = digits(body.phone);
   const now = new Date().toISOString();
   const offeringNumber = Number(max.n) + 1;
@@ -68,19 +81,18 @@ export async function onRequestPost({ request, env }) {
     phone: `+91 ${phoneDigits.slice(0, 5)} ${phoneDigits.slice(5)}`,
     content: body.content.trim(),
     wordCount: countWords(body.content),
-    editCodeHash: await hashCode(id, editCode),
     createdAt: now,
     updatedAt: now
   };
 
   await env.DB.prepare(
     `INSERT INTO offerings
-     (id, offering_number, devotee_name, center, email, phone, content, word_count, edit_code_hash, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).bind(row.id, row.offeringNumber, row.devoteeName, row.center, row.email, row.phone, row.content, row.wordCount, row.editCodeHash, row.createdAt, row.updatedAt).run();
+     (id, offering_number, devotee_name, center, email, phone, content, word_count, owner_google_sub, owner_google_email, owner_google_name, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(row.id, row.offeringNumber, row.devoteeName, row.center, row.email, row.phone, row.content, row.wordCount, owner.sub, owner.email, owner.name, row.createdAt, row.updatedAt).run();
 
   return json({ offering: publicOffering({
     id: row.id, offering_number: row.offeringNumber, devotee_name: row.devoteeName, center: row.center,
     content: row.content, created_at: row.createdAt, updated_at: row.updatedAt, word_count: row.wordCount
-  }), editCode }, 201);
+  }) }, 201);
 }

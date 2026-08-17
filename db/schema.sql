@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS offerings (
   content TEXT NOT NULL,
   word_count INTEGER NOT NULL DEFAULT 0,
   edit_code_hash TEXT,
+  owner_google_sub TEXT,
+  owner_google_email TEXT,
+  owner_google_name TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

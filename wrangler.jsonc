@@ -3,6 +3,9 @@
   "name": "vyasapuja-offerings",
   "pages_build_output_dir": ".",
   "compatibility_date": "2026-08-17",
+  "vars": {
+    "GOOGLE_CLIENT_ID": "REPLACE_WITH_GOOGLE_CLIENT_ID"
+  },
   "d1_databases": [
     {
       "binding": "DB",
