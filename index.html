@@ -28,25 +28,31 @@
   <!-- Main Container -->
   <main class="main-content">
     
-    <!-- Hero / Submit Action Bar -->
-    <section class="submit-action-section">
-      <div class="submit-banner">
-        <div class="banner-text-wrap">
-          <span class="banner-tag">SRI VYASA-PUJA</span>
-          <h2 class="banner-heading">Offerings of Gratitude & Devotion</h2>
-        </div>
+    <section class="primary-actions-section">
+      <div class="action-card action-card-dark">
+        <span class="banner-tag">SRI VYASA-PUJA</span>
+        <h2>Submit your offering</h2>
         <button id="mainSubmitBtn" class="btn-submit-hero">
-          <span>Submit Your Offering</span>
+          <span>Sign in to submit your offering</span>
           <span class="hero-btn-arrow">→</span>
         </button>
       </div>
+      <div class="action-card">
+        <span class="section-label">MY OFFERING</span>
+        <h2>Edit your offering</h2>
+        <button id="editMineBtn" class="btn-submit-hero btn-dark">
+          <span>Sign in to edit your offering</span>
+          <span class="hero-btn-arrow">→</span>
+        </button>
+      </div>
+      <div id="myOfferingsPanel" class="my-offerings-panel hidden"></div>
     </section>
 
-    <section class="edit-search-section">
+    <section class="public-search-section">
       <div class="edit-search-panel">
         <div>
-          <span class="section-label">EDIT OFFERING</span>
-          <h2 class="section-title">Search your offering</h2>
+          <span class="section-label">SEARCH OFFERINGS</span>
+          <h2 class="section-title">Search offerings</h2>
         </div>
         <form id="offeringSearchForm" class="search-form">
           <input id="offeringSearchInput" class="form-control search-input" type="search" placeholder="Search by name, phone number, or email" autocomplete="off">
@@ -107,7 +113,7 @@
         <button class="modal-close-btn" id="closeAuthModalBtn" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
-        <p class="search-help">Sign in to submit or edit your offering.</p>
+        <p class="search-help" id="authModalHelp">Sign in to continue.</p>
         <div class="auth-panel">
           <div id="googleSignInButton"></div>
           <div id="signedInBadge" class="signed-in-badge hidden"></div>

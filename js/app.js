@@ -5,7 +5,8 @@
   const AuthState = { clientId: '', credential: '', email: '', name: '', ready: false, afterLogin: null };
   const $ = (id) => document.getElementById(id);
   const DOM = {
-    mainSubmitBtn: $('mainSubmitBtn'), totalOfferingsCountBadge: $('totalOfferingsCountBadge'), offeringsGrid: $('offeringsGrid'),
+    mainSubmitBtn: $('mainSubmitBtn'), editMineBtn: $('editMineBtn'), myOfferingsPanel: $('myOfferingsPanel'),
+    totalOfferingsCountBadge: $('totalOfferingsCountBadge'), offeringsGrid: $('offeringsGrid'),
     emptyOfferingsState: $('emptyOfferingsState'), emptyStateSubmitBtn: $('emptyStateSubmitBtn'), paginationWrapper: $('paginationWrapper'),
     paginationInfo: $('paginationInfo'), paginationNumbers: $('paginationNumbers'), prevPageBtn: $('prevPageBtn'), nextPageBtn: $('nextPageBtn'),
     submissionModal: $('submissionModal'), closeSubmissionModalBtn: $('closeSubmissionModalBtn'), cancelSubmissionBtn: $('cancelSubmissionBtn'),
@@ -16,7 +17,7 @@
     readerModal: $('readerModal'), closeReaderModalBtn: $('closeReaderModalBtn'), closeReaderFooterBtn: $('closeReaderFooterBtn'),
     readerOfferingNumber: $('readerOfferingNumber'), readerCenterBadge: $('readerCenterBadge'), readerDate: $('readerDate'), readerAuthorName: $('readerAuthorName'),
     readerAuthorCenter: $('readerAuthorCenter'), readerOfferingContent: $('readerOfferingContent'), copyOfferingLinkBtn: $('copyOfferingLinkBtn'),
-    toastContainer: $('toastContainer'), authModal: $('authModal'), closeAuthModalBtn: $('closeAuthModalBtn'),
+    toastContainer: $('toastContainer'), authModal: $('authModal'), authModalHelp: $('authModalHelp'), closeAuthModalBtn: $('closeAuthModalBtn'),
     googleSignInButton: $('googleSignInButton'), signedInBadge: $('signedInBadge')
   };
 
@@ -80,14 +81,15 @@
     }
   }
 
-  function requireGoogle(next) {
+  function requireGoogle(next, message) {
     if (AuthState.credential) return true;
     AuthState.afterLogin = next || null;
-    openAuthModal();
+    openAuthModal(message);
     return false;
   }
 
-  function openAuthModal() {
+  function openAuthModal(message) {
+    DOM.authModalHelp.textContent = message || 'Sign in to continue.';
     DOM.signedInBadge.textContent = AuthState.ready ? '' : 'Google login is not configured yet.';
     DOM.signedInBadge.classList.toggle('hidden', AuthState.ready);
     DOM.authModal.classList.remove('hidden');
@@ -110,10 +112,13 @@
 
   function bindEvents() {
     DOM.mainSubmitBtn.addEventListener('click', () => {
-      if (requireGoogle(() => openSubmissionModal())) openSubmissionModal();
+      if (requireGoogle(() => openSubmissionModal(), 'Sign in to submit your offering.')) openSubmissionModal();
     });
     DOM.emptyStateSubmitBtn.addEventListener('click', () => {
-      if (requireGoogle(() => openSubmissionModal())) openSubmissionModal();
+      if (requireGoogle(() => openSubmissionModal(), 'Sign in to submit your offering.')) openSubmissionModal();
+    });
+    DOM.editMineBtn.addEventListener('click', () => {
+      if (requireGoogle(loadMyOfferings, 'Sign in to edit your offering.')) loadMyOfferings();
     });
     DOM.closeAuthModalBtn.addEventListener('click', closeAuthModal);
     DOM.closeSubmissionModalBtn.addEventListener('click', closeSubmissionModal);
@@ -123,6 +128,7 @@
     DOM.offeringContent.addEventListener('input', updateWordCounter);
     DOM.offeringForm.addEventListener('submit', handleFormSubmit);
     DOM.searchForm.addEventListener('submit', handleSearch);
+    DOM.searchInput.addEventListener('input', debounce(handleSearchInput, 220));
     DOM.closeReaderModalBtn.addEventListener('click', closeReaderModal);
     DOM.closeReaderFooterBtn.addEventListener('click', closeReaderModal);
     DOM.copyOfferingLinkBtn.addEventListener('click', copyOfferingLink);
@@ -192,10 +198,24 @@
 
   async function handleSearch(e) {
     e.preventDefault();
+    await runPublicSearch();
+  }
+
+  async function handleSearchInput() {
+    await runPublicSearch();
+  }
+
+  async function runPublicSearch() {
+    const query = DOM.searchInput.value.trim();
+    if (!query) {
+      DOM.searchResults.classList.add('hidden');
+      DOM.searchResults.innerHTML = '';
+      return;
+    }
     DOM.searchResults.classList.remove('hidden');
     DOM.searchResults.textContent = 'Searching...';
     try {
-      renderSearchResults((await requestJson(`${API}/search`, { method: 'POST', body: JSON.stringify({ query: DOM.searchInput.value }) })).results || []);
+      renderSearchResults((await requestJson(`${API}/search`, { method: 'POST', body: JSON.stringify({ query }) })).results || []);
     } catch (err) {
       DOM.searchResults.textContent = err.message;
     }
@@ -207,14 +227,46 @@
     results.forEach((offering) => {
       const row = document.createElement('div');
       row.className = 'search-result-item';
-      row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - ${esc(offering.emailMasked)} - ${esc(offering.phoneMasked)}</span></div><button class="page-nav-btn">Edit</button>`;
-      row.querySelector('button').addEventListener('click', () => openOwnedOffering(offering.id));
+      row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - ${esc(offering.emailMasked)} - ${esc(offering.phoneMasked)}</span></div><div class="search-result-actions"><button class="page-nav-btn">Read</button></div>`;
+      row.querySelector('button').addEventListener('click', () => openSearchOffering(offering));
       DOM.searchResults.appendChild(row);
     });
   }
 
+  function openSearchOffering(offering) {
+    const existing = AppState.offerings.find((o) => o.id === offering.id);
+    if (existing) openReaderModal(existing.id);
+    else openReaderFromOffering(offering);
+  }
+
+  async function loadMyOfferings() {
+    DOM.myOfferingsPanel.classList.remove('hidden');
+    DOM.myOfferingsPanel.textContent = 'Loading your offering...';
+    try {
+      renderMyOfferings((await requestJson(`${API}/mine`)).offerings || []);
+    } catch (e) {
+      DOM.myOfferingsPanel.textContent = e.message;
+    }
+  }
+
+  function renderMyOfferings(offerings) {
+    if (!offerings.length) {
+      DOM.myOfferingsPanel.textContent = 'No offering found for this Google account.';
+      return;
+    }
+    DOM.myOfferingsPanel.innerHTML = '';
+    offerings.forEach((offering) => {
+      const row = document.createElement('div');
+      row.className = 'search-result-item';
+      row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - #${offering.offeringNumber}</span></div><div class="search-result-actions"><button class="page-nav-btn">Edit</button></div>`;
+      row.querySelector('button').addEventListener('click', () => openSubmissionModal(offering));
+      DOM.myOfferingsPanel.appendChild(row);
+    });
+    if (offerings.length === 1) openSubmissionModal(offerings[0]);
+  }
+
   async function openOwnedOffering(id) {
-    if (!requireGoogle(() => openOwnedOffering(id))) return;
+    if (!requireGoogle(() => openOwnedOffering(id), 'Sign in to edit your offering.')) return;
     try {
       openSubmissionModal((await requestJson(`${API}/${id}`)).offering);
     } catch (e) {
@@ -306,6 +358,10 @@
   function openReaderModal(id) {
     const offering = AppState.offerings.find((o) => o.id === id);
     if (!offering) return;
+    openReaderFromOffering(offering);
+  }
+
+  function openReaderFromOffering(offering) {
     DOM.readerOfferingNumber.textContent = `#${offering.offeringNumber}`;
     DOM.readerCenterBadge.textContent = cleanCenterName(offering.center);
     DOM.readerDate.textContent = formatDate(offering.createdAt);
@@ -359,5 +415,12 @@
   function formatDate(isoStr) { return isoStr ? new Date(isoStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''; }
   function createExcerpt(text, length = 180) { const clean = (text || '').replace(/\s+/g, ' ').trim(); return clean.length <= length ? clean : `${clean.slice(0, length)}...`; }
   function esc(str) { const div = document.createElement('div'); div.textContent = str || ''; return div.innerHTML; }
+  function debounce(fn, delay) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();

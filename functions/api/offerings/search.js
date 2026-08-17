@@ -15,7 +15,7 @@ const maskPhone = (phone) => {
 export async function onRequestPost({ request, env }) {
   const { query = '' } = await request.json().catch(() => ({}));
   const q = String(query).trim().toLowerCase();
-  if (q.length < 3) return json({ error: 'Type at least 3 characters.' }, 400);
+  if (!q) return json({ results: [] });
   const qDigits = digits(q);
   const like = `%${q}%`;
   const phoneLike = qDigits.length >= 3 ? `%${qDigits}%` : '__NO_PHONE_MATCH__';

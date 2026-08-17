@@ -139,31 +139,42 @@ body {
   gap: 3.5rem;
 }
 
-/* ==========================================================================
-   Hero: Prominent, Large, Beautiful "Submit Your Offering" Button Section
-   ========================================================================== */
-.submit-action-section {
+.primary-actions-section {
   width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
 }
 
-.submit-banner {
-  background: var(--bg-espresso);
-  color: var(--text-white);
+.action-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
-  padding: 3rem 3.5rem;
+  padding: 2rem;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 2rem;
-  position: relative;
-  overflow: hidden;
+  min-height: 250px;
   box-shadow: 0 12px 36px rgba(36, 29, 23, 0.12);
 }
 
-.banner-text-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.action-card-dark {
+  background: var(--bg-espresso);
+  color: var(--text-white);
+}
+
+.action-card h2 {
+  font-family: var(--font-serif-display);
+  font-size: 2.7rem;
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--text-espresso);
+  margin: 1rem 0 2rem;
+}
+
+.action-card-dark h2 {
+  color: #FAF6F0;
 }
 
 .banner-tag {
@@ -173,15 +184,6 @@ body {
   text-transform: uppercase;
   color: #CBB9A7;
   font-weight: 600;
-}
-
-.banner-heading {
-  font-family: var(--font-serif-display);
-  font-size: 2.25rem;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  color: #FAF6F0;
 }
 
 /* The Grand Hero Button */
@@ -227,6 +229,24 @@ body {
 .btn-submit-sm {
   padding: 0.65rem 1.4rem;
   font-size: 0.875rem;
+}
+
+.btn-dark {
+  background: var(--bg-espresso);
+  color: var(--text-white);
+}
+
+.btn-dark:hover {
+  background: var(--bg-espresso-hover);
+}
+
+.my-offerings-panel {
+  grid-column: 1 / -1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
 }
 
 /* ==========================================================================
@@ -278,7 +298,7 @@ body {
   letter-spacing: 0.04em;
 }
 
-.edit-search-section {
+.public-search-section {
   width: 100%;
 }
 
@@ -352,6 +372,12 @@ body {
   display: block;
   color: var(--text-muted);
   font-size: 0.8rem;
+}
+
+.search-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* Offerings Cards Grid */
@@ -929,12 +955,9 @@ body {
 
 /* Responsive */
 @media (max-width: 860px) {
-  .submit-banner {
-    flex-direction: column;
-    text-align: center;
-    padding: 2.25rem 1.75rem;
-  }
-  .banner-heading { font-size: 1.75rem; }
+  .primary-actions-section { grid-template-columns: 1fr; }
+  .action-card { min-height: 220px; padding: 1.75rem; }
+  .action-card h2 { font-size: 2.1rem; }
   .btn-submit-hero { width: 100%; }
   .form-row-2 { grid-template-columns: 1fr; }
   .reader-modal-body { padding: 1.75rem 1.5rem; }
@@ -946,7 +969,7 @@ body {
 /* Print */
 @media print {
   body { background: #FFFFFF !important; }
-  .app-header, .submit-action-section, .pagination-wrapper, .modal-close-btn, .modal-footer {
+  .app-header, .primary-actions-section, .public-search-section, .pagination-wrapper, .modal-close-btn, .modal-footer {
     display: none !important;
   }
   .modal-overlay { position: static !important; background: none !important; }
