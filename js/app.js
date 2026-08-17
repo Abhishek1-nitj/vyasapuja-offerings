@@ -187,21 +187,28 @@
   }
 
   function renderCenterSummary() {
-    const counts = new Map();
+    const grouped = new Map();
     AppState.offerings.forEach((offering) => {
       const center = cleanCenterName(offering.center) || 'Other';
-      counts.set(center, (counts.get(center) || 0) + 1);
+      if (!grouped.has(center)) grouped.set(center, []);
+      grouped.get(center).push(offering);
     });
-    const items = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const items = [...grouped.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
     DOM.centerSummaryGrid.innerHTML = '';
     if (!items.length) {
       DOM.centerSummaryGrid.innerHTML = '<p class="search-help">No center-wise offerings yet.</p>';
       return;
     }
-    items.forEach(([center, count]) => {
+    items.forEach(([center, offerings]) => {
       const card = document.createElement('div');
       card.className = 'center-summary-item';
-      card.innerHTML = `<span>${esc(center)}</span><strong>${count}</strong>`;
+      card.innerHTML = `<button class="center-summary-toggle" type="button"><span>${esc(center)}</span><strong>${offerings.length}</strong></button><div class="center-submitters hidden">${offerings.map((offering) => `<button type="button" data-id="${esc(offering.id)}">${esc(offering.devoteeName)}</button>`).join('')}</div>`;
+      card.querySelector('.center-summary-toggle').addEventListener('click', () => {
+        card.querySelector('.center-submitters').classList.toggle('hidden');
+      });
+      card.querySelectorAll('.center-submitters button').forEach((btn) => {
+        btn.addEventListener('click', () => openReaderModal(btn.dataset.id));
+      });
       DOM.centerSummaryGrid.appendChild(card);
     });
   }
@@ -213,7 +220,7 @@
       <div class="card-top"><span class="card-index">${String(index).padStart(2, '0')}</span><span class="card-center">${esc(cleanCenterName(offering.center))}</span></div>
       <h3 class="card-author-name">${esc(offering.devoteeName)}</h3>
       <p class="card-content-preview">${esc(createExcerpt(offering.content, 220))}</p>
-      <div class="card-footer"><span class="card-date">${formatDate(offering.createdAt)}</span><button class="btn-read-link">Read full homage -></button></div>`;
+      <div class="card-footer"><span class="card-date">${formatDate(offering.createdAt)}</span><button class="btn-read-link">Read full offering -></button></div>`;
     card.addEventListener('click', () => openReaderModal(offering.id));
     card.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); openReaderModal(offering.id); });
     return card;
