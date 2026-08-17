@@ -276,7 +276,23 @@
     </div>
   </div>
 
-  <!-- Modal 2: Full Offering Reader Modal -->
+  <!-- Modal 2: Center Offering List Modal -->
+  <div class="modal-overlay hidden" id="centerOfferingsModal" role="dialog" aria-modal="true" aria-labelledby="centerOfferingsTitle">
+    <div class="modal-card center-offerings-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-eyebrow">CENTER OFFERINGS</span>
+          <h3 id="centerOfferingsTitle">Offerings of Center</h3>
+        </div>
+        <button class="modal-close-btn" id="closeCenterOfferingsModalBtn" aria-label="Close center offerings">✕</button>
+      </div>
+      <div class="modal-body center-offerings-body">
+        <div id="centerOfferingsList" class="center-offerings-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Full Offering Reader Modal -->
   <div class="modal-overlay hidden" id="readerModal" role="dialog" aria-modal="true" aria-labelledby="readerAuthorName">
     <div class="modal-card reader-modal-card">
       <div class="modal-header reader-header">
@@ -317,6 +333,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-  <script src="js/app.js?v=20260817-center-expand"></script>
+  <script src="js/app.js?v=20260817-center-modal"></script>
 </body>
 </html>

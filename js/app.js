@@ -16,7 +16,9 @@
     submitOfferingBtn: $('submitOfferingBtn'), devoteeName: $('devoteeName'), centerSelect: $('centerSelect'), customCenterGroup: $('customCenterGroup'),
     customCenterName: $('customCenterName'), devoteeEmail: $('devoteeEmail'), devoteePhone: $('devoteePhone'), offeringContent: $('offeringContent'),
     wordCounterBadge: $('wordCounterBadge'), searchForm: $('offeringSearchForm'), searchInput: $('offeringSearchInput'), searchResults: $('searchResults'),
-    centerSummaryGrid: $('centerSummaryGrid'),
+    centerSummaryGrid: $('centerSummaryGrid'), centerOfferingsModal: $('centerOfferingsModal'),
+    closeCenterOfferingsModalBtn: $('closeCenterOfferingsModalBtn'), centerOfferingsTitle: $('centerOfferingsTitle'),
+    centerOfferingsList: $('centerOfferingsList'),
     readerModal: $('readerModal'), closeReaderModalBtn: $('closeReaderModalBtn'), closeReaderFooterBtn: $('closeReaderFooterBtn'),
     readerOfferingNumber: $('readerOfferingNumber'), readerCenterBadge: $('readerCenterBadge'), readerDate: $('readerDate'), readerAuthorName: $('readerAuthorName'),
     readerAuthorCenter: $('readerAuthorCenter'), readerOfferingContent: $('readerOfferingContent'), copyOfferingLinkBtn: $('copyOfferingLinkBtn'),
@@ -152,11 +154,12 @@
     DOM.searchInput.addEventListener('input', debounce(handleSearchInput, 220));
     DOM.closeReaderModalBtn.addEventListener('click', closeReaderModal);
     DOM.closeReaderFooterBtn.addEventListener('click', closeReaderModal);
+    DOM.closeCenterOfferingsModalBtn.addEventListener('click', closeCenterOfferingsModal);
     DOM.copyOfferingLinkBtn.addEventListener('click', copyOfferingLink);
     DOM.prevPageBtn.addEventListener('click', () => changePage(-1));
     DOM.nextPageBtn.addEventListener('click', () => changePage(1));
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAuthModal(); closeSubmissionModal(); closeReaderModal(); } });
-    [DOM.authModal, DOM.submissionModal, DOM.readerModal].forEach((modal) => modal.addEventListener('click', (e) => {
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAuthModal(); closeSubmissionModal(); closeCenterOfferingsModal(); closeReaderModal(); } });
+    [DOM.authModal, DOM.submissionModal, DOM.centerOfferingsModal, DOM.readerModal].forEach((modal) => modal.addEventListener('click', (e) => {
       if (e.target === modal) { modal.classList.add('hidden'); document.body.style.overflow = ''; }
     }));
   }
@@ -202,15 +205,34 @@
     items.forEach(([center, offerings]) => {
       const card = document.createElement('div');
       card.className = 'center-summary-item';
-      card.innerHTML = `<button class="center-summary-toggle" type="button"><span>${esc(center)}</span><strong>${offerings.length}</strong></button><div class="center-submitters hidden">${offerings.map((offering) => `<button type="button" data-id="${esc(offering.id)}">${esc(offering.devoteeName)}</button>`).join('')}</div>`;
-      card.querySelector('.center-summary-toggle').addEventListener('click', () => {
-        card.querySelector('.center-submitters').classList.toggle('hidden');
-      });
-      card.querySelectorAll('.center-submitters button').forEach((btn) => {
-        btn.addEventListener('click', () => openReaderModal(btn.dataset.id));
-      });
+      card.innerHTML = `<button class="center-summary-toggle" type="button"><span>${esc(center)}</span><strong>${offerings.length}</strong></button>`;
+      card.querySelector('.center-summary-toggle').addEventListener('click', () => openCenterOfferingsModal(center, offerings));
       DOM.centerSummaryGrid.appendChild(card);
     });
+  }
+
+  function openCenterOfferingsModal(center, offerings) {
+    const sorted = [...offerings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    DOM.centerOfferingsTitle.textContent = `Offerings of ${center}`;
+    DOM.centerOfferingsList.innerHTML = '';
+    sorted.forEach((offering) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'center-offering-row';
+      row.innerHTML = `<span><strong>${esc(offering.devoteeName)}</strong><small>Submitted on ${formatDate(offering.createdAt)}</small></span><em>#${esc(offering.offeringNumber || '')}</em>`;
+      row.addEventListener('click', () => {
+        closeCenterOfferingsModal();
+        openReaderModal(offering.id);
+      });
+      DOM.centerOfferingsList.appendChild(row);
+    });
+    DOM.centerOfferingsModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCenterOfferingsModal() {
+    DOM.centerOfferingsModal.classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
   function cardFor(offering, index) {

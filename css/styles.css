@@ -420,30 +420,58 @@ body {
   font-size: 0.85rem;
 }
 
-.center-submitters {
-  border-top: 1px solid var(--border-subtle);
-  background: #FFFFFF;
-  padding: 0.5rem;
+.center-offerings-card {
+  max-width: 620px;
+}
+
+.center-offerings-body {
+  padding: 0;
+}
+
+.center-offerings-list {
+  max-height: min(64vh, 620px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 }
 
-.center-submitters button {
+.center-offering-row {
   border: 0;
+  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
-  color: var(--text-muted);
+  color: var(--text-dark);
   cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  padding: 0.45rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
   text-align: left;
-  border-radius: var(--radius-xs);
+  font-family: var(--font-sans);
 }
 
-.center-submitters button:hover {
+.center-offering-row:hover {
   background: var(--bg-sand-light);
+}
+
+.center-offering-row strong {
+  display: block;
   color: var(--text-espresso);
+  font-size: 0.95rem;
+}
+
+.center-offering-row small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.center-offering-row em {
+  color: var(--accent-terracotta);
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .edit-search-panel {
