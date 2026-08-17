@@ -70,6 +70,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -971,6 +972,7 @@ body {
   font-size: 0.9375rem;
   outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
+  min-height: 44px;
 }
 
 .form-control:focus {
@@ -1161,22 +1163,111 @@ body {
 
 /* Responsive */
 @media (max-width: 860px) {
+  html { font-size: 15px; }
+  .app-header { position: static; }
+  .header-container {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.9rem 1rem;
+  }
+  .brand-title { font-size: 1.35rem; }
+  .brand-dedication { font-size: 0.82rem; line-height: 1.35; }
   .pre-signin-actions { grid-template-columns: 1fr; }
-  .action-card { min-height: 220px; padding: 1.75rem; }
-  .action-card h2 { font-size: 2.1rem; }
+  .action-card { min-height: 0; padding: 1.35rem; }
+  .action-card h2 { font-size: 2rem; margin: 0.85rem 0 1.25rem; }
+  .main-content { gap: 2rem; padding: 1.25rem 1rem 3rem; }
+  .signed-in-panel, .center-summary-panel, .edit-search-panel, .my-offerings-panel {
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+  }
   .signed-in-top { align-items: flex-start; flex-direction: column; }
   .signed-in-actions { align-items: stretch; flex-direction: column; width: 100%; }
+  .signed-in-user { align-items: flex-start; width: 100%; }
+  .signed-in-avatar { width: 44px; height: 44px; flex: 0 0 auto; }
+  .signed-in-user h2, .section-title { font-size: 1.65rem; }
   .btn-logout { width: 100%; }
   .btn-submit-hero { width: 100%; }
   .form-row-2 { grid-template-columns: 1fr; }
-  .reader-modal-body { padding: 1.75rem 1.5rem; }
-  .main-content { padding: 2rem 1.25rem 4rem; }
   .search-form { grid-template-columns: 1fr; }
   .search-result-item { align-items: flex-start; flex-direction: column; }
+  .search-result-actions { width: 100%; flex-wrap: wrap; }
+  .search-result-actions .page-nav-btn { flex: 1 1 auto; min-height: 42px; }
+  .center-summary-grid { grid-template-columns: 1fr; }
+  .center-summary-toggle { min-height: 52px; padding: 0.8rem 0.85rem; }
+  .section-header { align-items: flex-start; flex-direction: column; gap: 0.35rem; }
   .offering-card { align-items: flex-start; flex-direction: column; }
   .offering-row-main { align-items: flex-start; flex-direction: column; width: 100%; }
   .offering-row-meta { min-width: 0; width: 100%; }
+  .card-index { font-size: 0.68rem; }
+  .card-content-preview { font-size: 0.98rem; -webkit-line-clamp: 3; }
   .btn-read-link { width: 100%; justify-content: flex-start; }
+  .pagination-wrapper { align-items: stretch; flex-direction: column; margin-top: 1rem; }
+  .pagination-actions { justify-content: space-between; overflow-x: auto; padding-bottom: 0.15rem; }
+  .page-nav-btn { min-height: 42px; padding: 0.5rem 0.8rem; }
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-card {
+    border-radius: 18px 18px 0 0;
+    max-height: 94dvh;
+  }
+  .modal-header {
+    padding: 1rem 1rem 0.85rem;
+    align-items: flex-start;
+  }
+  .modal-title-wrap h3 { font-size: 1.45rem; line-height: 1.12; }
+  .modal-close-btn { width: 42px; height: 42px; flex: 0 0 auto; }
+  .modal-body { padding: 1rem; }
+  .modal-footer {
+    align-items: stretch;
+    flex-direction: column-reverse;
+    padding: 1rem;
+  }
+  .btn-cancel { min-height: 44px; }
+  .offering-textarea { min-height: 220px; font-size: 1rem; }
+  .center-offerings-card, .reader-modal-card, .modal-lg { max-width: none; }
+  .center-offerings-list { max-height: 70dvh; }
+  .center-offering-row { align-items: flex-start; padding: 1rem; }
+  .reader-header { padding: 1rem; }
+  .reader-meta-top { align-items: flex-start; flex-wrap: wrap; gap: 0.35rem 0.55rem; }
+  .reader-center { line-height: 1.35; }
+  .reader-divider-dot { display: none; }
+  .reader-modal-body { padding: 1.35rem 1rem 1.75rem; }
+  .reader-author-title { font-size: 1.7rem; line-height: 1.15; }
+  .reader-location-sub { font-size: 0.72rem; line-height: 1.45; }
+  .reader-ornament { margin: 1.15rem 0; }
+  .reader-prose { font-size: 1.03rem; line-height: 1.75; }
+  .reader-footer { justify-content: flex-start; }
+  .toast-container {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+  .toast { justify-content: center; border-radius: var(--radius-sm); text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .main-content { padding: 1rem 0.75rem 2.5rem; }
+  .brand-title { font-size: 1.22rem; }
+  .brand-dedication { font-size: 0.78rem; }
+  .action-card h2 { font-size: 1.75rem; }
+  .section-title, .signed-in-user h2 { font-size: 1.45rem; }
+  .section-label, .modal-eyebrow { letter-spacing: 0.14em; }
+  .btn-submit-hero { padding: 0.9rem 1rem; white-space: normal; min-height: 48px; }
+  .btn-submit-sm { padding: 0.75rem 1rem; }
+  .form-control, .phone-prefix, .phone-input-field { font-size: 16px; }
+  .phone-prefix { padding-left: 0.7rem; padding-right: 0.7rem; }
+  .offering-card { padding: 0.95rem; gap: 0.75rem; }
+  .card-author-name { font-size: 1rem; }
+  .card-content-preview { font-size: 0.95rem; line-height: 1.55; }
+  .pagination-numbers { display: none; }
+  .pagination-actions { gap: 0.75rem; }
+  .pagination-actions .page-nav-btn { flex: 1; }
+  .modal-card { max-height: 96dvh; }
+  .modal-title-wrap h3 { font-size: 1.3rem; }
+  .reader-prose { font-size: 1rem; line-height: 1.7; }
 }
 
 /* Print */
