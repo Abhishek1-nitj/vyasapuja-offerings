@@ -962,6 +962,34 @@ body {
   color: var(--text-light);
 }
 
+.format-toolbar {
+  border: 1px solid var(--border-subtle);
+  border-bottom: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--bg-sand-light);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.45rem;
+}
+
+.format-toolbar button {
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  background: #FFFFFF;
+  color: var(--text-espresso);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+}
+
+.format-toolbar button:hover {
+  border-color: var(--border-dark);
+}
+
 .form-control {
   padding: 0.75rem 0.95rem;
   border-radius: var(--radius-sm);
@@ -1021,6 +1049,26 @@ body {
   line-height: 1.65;
   font-family: var(--font-serif-text);
   font-size: 1rem;
+}
+
+.rich-editor {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  overflow-y: auto;
+}
+
+.rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-light);
+}
+
+.rich-editor ul, .rich-editor ol, .reader-prose ul, .reader-prose ol {
+  padding-left: 1.4rem;
+  margin: 0.75rem 0;
+}
+
+.rich-editor p, .rich-editor div, .reader-prose p, .reader-prose div {
+  margin-bottom: 0.8rem;
 }
 
 .field-error {
@@ -1119,7 +1167,7 @@ body {
   font-size: 1.125rem;
   line-height: 1.9;
   color: #2D241E;
-  white-space: pre-line;
+  white-space: normal;
 }
 
 .reader-footer {
@@ -1227,6 +1275,7 @@ body {
   }
   .btn-cancel { min-height: 44px; }
   .offering-textarea { min-height: 220px; font-size: 1rem; }
+  .format-toolbar button { min-height: 40px; }
   .center-offerings-card, .reader-modal-card, .modal-lg { max-width: none; }
   .center-offerings-list { max-height: 70dvh; }
   .center-offering-row { align-items: flex-start; padding: 1rem; }

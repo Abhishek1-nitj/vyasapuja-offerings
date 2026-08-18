@@ -20,7 +20,7 @@ export async function onRequestPost({ request, env }) {
   const like = `%${q}%`;
   const phoneLike = qDigits.length >= 3 ? `%${qDigits}%` : '__NO_PHONE_MATCH__';
   const { results } = await env.DB.prepare(
-    `SELECT id, offering_number, devotee_name, center, email, phone, content, created_at, updated_at, word_count
+    `SELECT id, offering_number, devotee_name, center, email, phone, content, content_html, created_at, updated_at, word_count
      FROM offerings
      WHERE lower(devotee_name) LIKE ? OR lower(email) LIKE ? OR replace(replace(replace(phone, ' ', ''), '+', ''), '-', '') LIKE ?
      ORDER BY datetime(created_at) DESC LIMIT 20`
@@ -34,6 +34,7 @@ export async function onRequestPost({ request, env }) {
       emailMasked: maskEmail(r.email),
       phoneMasked: maskPhone(r.phone),
       content: r.content,
+      contentHtml: r.content_html || '',
       createdAt: r.created_at,
       updatedAt: r.updated_at,
       wordCount: r.word_count

@@ -1,22 +1,19 @@
+import { currentUser } from '../../_lib/auth.js';
+
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8' } });
 
 const countWords = (s) => (s || '').trim().split(/\s+/).filter(Boolean).length;
 const digits = (s) => (s || '').replace(/\D/g, '');
-
-async function verifyGoogle(request, env) {
-  const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  if (!token) throw new Error('Please sign in with Google.');
-  if (!env.GOOGLE_CLIENT_ID || env.GOOGLE_CLIENT_ID === 'REPLACE_WITH_GOOGLE_CLIENT_ID') {
-    throw new Error('Google login is not configured yet.');
-  }
-  const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
-  const profile = await res.json().catch(() => ({}));
-  if (!res.ok || profile.aud !== env.GOOGLE_CLIENT_ID || profile.email_verified !== 'true') {
-    throw new Error('Google sign-in could not be verified.');
-  }
-  return { sub: profile.sub, email: String(profile.email || '').toLowerCase() };
-}
+const sanitizeHtml = (html) => String(html || '')
+  .replace(/<!--[\s\S]*?-->/g, '')
+  .replace(/<\/?(script|style|iframe|object|embed|link|meta)[^>]*>/gi, '')
+  .replace(/\s+on\w+="[^"]*"/gi, '')
+  .replace(/\s+on\w+='[^']*'/gi, '')
+  .replace(/\s+(style|class|id)="[^"]*"/gi, '')
+  .replace(/\s+(style|class|id)='[^']*'/gi, '')
+  .replace(/<(\/?)(?!div\b|p\b|br\b|strong\b|b\b|em\b|i\b|u\b|ul\b|ol\b|li\b|blockquote\b)[^>]+>/gi, '')
+  .replace(/<(\/?)(div|p|br|strong|b|em|i|u|ul|ol|li|blockquote)(?:\s[^>]*)?>/gi, '<$1$2>');
 
 function validate(body) {
   const name = (body.devoteeName || '').trim();
@@ -39,12 +36,12 @@ function owns(row, owner) {
 export async function onRequestGet({ request, env, params }) {
   let owner;
   try {
-    owner = await verifyGoogle(request, env);
+    owner = await currentUser(request, env);
   } catch (e) {
     return json({ error: e.message }, 401);
   }
   const row = await env.DB.prepare(
-    `SELECT id, offering_number, devotee_name, center, email, phone, content, created_at, updated_at, word_count, owner_google_sub
+    `SELECT id, offering_number, devotee_name, center, email, phone, content, content_html, created_at, updated_at, word_count, owner_google_sub
      FROM offerings WHERE id = ?`
   ).bind(params.id).first();
   if (!row) return json({ error: 'Offering not found.' }, 404);
@@ -52,7 +49,7 @@ export async function onRequestGet({ request, env, params }) {
   return json({
     offering: {
       id: row.id, offeringNumber: row.offering_number, devoteeName: row.devotee_name, center: row.center,
-      email: row.email, phone: row.phone, content: row.content, createdAt: row.created_at,
+      email: row.email, phone: row.phone, content: row.content, contentHtml: row.content_html || '', createdAt: row.created_at,
       updatedAt: row.updated_at, wordCount: row.word_count
     }
   });
@@ -62,7 +59,7 @@ export async function onRequestPut({ request, env, params }) {
   const id = params.id;
   let owner;
   try {
-    owner = await verifyGoogle(request, env);
+    owner = await currentUser(request, env);
   } catch (e) {
     return json({ error: e.message }, 401);
   }
@@ -78,12 +75,12 @@ export async function onRequestPut({ request, env, params }) {
   const now = new Date().toISOString();
   await env.DB.prepare(
     `UPDATE offerings
-     SET devotee_name = ?, center = ?, email = ?, phone = ?, content = ?, word_count = ?, updated_at = ?
+     SET devotee_name = ?, center = ?, email = ?, phone = ?, content = ?, content_html = ?, word_count = ?, updated_at = ?
      WHERE id = ?`
   ).bind(
     body.devoteeName.trim(), body.center.trim(), body.email.trim().toLowerCase(),
     `+91 ${phoneDigits.slice(0, 5)} ${phoneDigits.slice(5)}`,
-    body.content.trim(), countWords(body.content), now, id
+    body.content.trim(), sanitizeHtml(body.contentHtml || body.content), countWords(body.content), now, id
   ).run();
 
   return json({ ok: true });
@@ -92,7 +89,7 @@ export async function onRequestPut({ request, env, params }) {
 export async function onRequestDelete({ request, env, params }) {
   let owner;
   try {
-    owner = await verifyGoogle(request, env);
+    owner = await currentUser(request, env);
   } catch (e) {
     return json({ error: e.message }, 401);
   }

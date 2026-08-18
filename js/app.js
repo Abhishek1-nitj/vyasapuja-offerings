@@ -29,6 +29,7 @@
   async function init() {
     bindEvents();
     await setupGoogle();
+    await restoreSession();
     await loadOfferings();
     checkUrlHashForOffering();
   }
@@ -59,6 +60,18 @@
     }
   }
 
+  async function restoreSession() {
+    try {
+      const data = await requestJson('/api/auth/session');
+      if (data.user?.email) {
+        AuthState.email = data.user.email;
+        AuthState.name = data.user.name || '';
+        AuthState.picture = data.user.picture || '';
+        renderSignedInState();
+      }
+    } catch {}
+  }
+
   function waitForGoogle() {
     return new Promise((resolve, reject) => {
       let tries = 0;
@@ -69,12 +82,23 @@
     });
   }
 
-  function handleGoogleCredential(response) {
+  async function handleGoogleCredential(response) {
     AuthState.credential = response.credential;
     const payload = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
     AuthState.email = payload.email || '';
     AuthState.name = payload.name || '';
     AuthState.picture = payload.picture || '';
+    try {
+      const data = await requestJson('/api/auth/session', { method: 'POST' });
+      if (data.user?.email) {
+        AuthState.email = data.user.email;
+        AuthState.name = data.user.name || AuthState.name;
+        AuthState.picture = data.user.picture || AuthState.picture;
+      }
+    } catch (e) {
+      showToast(e.message);
+      return;
+    }
     DOM.signedInBadge.textContent = `Signed in as ${AuthState.email}`;
     DOM.signedInBadge.classList.remove('hidden');
     if (!DOM.editingOfferingId.value && !DOM.devoteeEmail.value) DOM.devoteeEmail.value = AuthState.email;
@@ -102,7 +126,8 @@
     loadMyOfferings();
   }
 
-  function logout() {
+  async function logout() {
+    requestJson('/api/auth/session', { method: 'DELETE' }).catch(() => {});
     if (AuthState.email && window.google?.accounts?.id) google.accounts.id.revoke(AuthState.email, () => {});
     AuthState.credential = '';
     AuthState.email = '';
@@ -116,13 +141,14 @@
     DOM.signedInEmail.textContent = '';
     DOM.signedInAvatar.removeAttribute('src');
     DOM.devoteeEmail.value = '';
+    setEditorHtml('');
     closeSubmissionModal();
     closeAuthModal();
     showToast('Logged out.');
   }
 
   function requireGoogle(next, message) {
-    if (AuthState.credential) return true;
+    if (AuthState.credential || AuthState.email) return true;
     AuthState.afterLogin = next || null;
     openAuthModal(message);
     return false;
@@ -169,6 +195,13 @@
     DOM.centerSelect.addEventListener('change', toggleCustomCenter);
     DOM.devoteePhone.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
     DOM.offeringContent.addEventListener('input', updateWordCounter);
+    DOM.offeringContent.addEventListener('paste', () => setTimeout(() => setEditorHtml(sanitizeEditorHtml(DOM.offeringContent.innerHTML)), 0));
+    document.querySelectorAll('.format-toolbar button').forEach((btn) => btn.addEventListener('click', () => {
+      DOM.offeringContent.focus();
+      document.execCommand(btn.dataset.command, false, null);
+      setEditorHtml(sanitizeEditorHtml(DOM.offeringContent.innerHTML));
+      updateWordCounter();
+    }));
     DOM.offeringForm.addEventListener('submit', handleFormSubmit);
     DOM.searchForm.addEventListener('submit', handleSearch);
     DOM.searchInput.addEventListener('input', debounce(handleSearchInput, 220));
@@ -239,7 +272,7 @@
       const row = document.createElement('button');
       row.type = 'button';
       row.className = 'center-offering-row';
-      row.innerHTML = `<span><strong>${esc(offering.devoteeName)}</strong><small>Submitted on ${formatDate(offering.createdAt)}</small></span><em>#${esc(offering.offeringNumber || '')}</em>`;
+      row.innerHTML = `<span><strong>${esc(offering.devoteeName)}</strong><small>Submitted on ${formatDate(offering.createdAt)}</small></span><em>#${formatOfferingNumber(offering.offeringNumber)}</em>`;
       row.addEventListener('click', () => {
         closeCenterOfferingsModal();
         openReaderModal(offering.id);
@@ -259,7 +292,7 @@
     const card = document.createElement('article');
     card.className = 'offering-card';
     card.innerHTML = `
-      <span class="card-index">${String(index).padStart(2, '0')}</span>
+      <span class="card-index">#${formatOfferingNumber(offering.offeringNumber)}</span>
       <div class="offering-row-main">
         <div class="offering-row-meta">
           <h3 class="card-author-name">${esc(offering.devoteeName)}</h3>
@@ -357,7 +390,7 @@
     offerings.forEach((offering) => {
       const row = document.createElement('div');
       row.className = 'search-result-item';
-      row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - #${offering.offeringNumber}</span></div><div class="search-result-actions"><button class="page-nav-btn" data-action="edit">Edit</button><button class="page-nav-btn" data-action="view">View</button><button class="page-nav-btn btn-danger" data-action="delete">Delete</button></div>`;
+      row.innerHTML = `<div><strong>${esc(offering.devoteeName)}</strong><span>${esc(offering.center)} - #${formatOfferingNumber(offering.offeringNumber)}</span></div><div class="search-result-actions"><button class="page-nav-btn" data-action="edit">Edit</button><button class="page-nav-btn" data-action="view">View</button><button class="page-nav-btn btn-danger" data-action="delete">Delete</button></div>`;
       row.querySelector('[data-action="edit"]').addEventListener('click', () => openSubmissionModal(offering));
       row.querySelector('[data-action="view"]').addEventListener('click', () => openReaderFromOffering(offering));
       row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteOffering(offering));
@@ -366,7 +399,7 @@
   }
 
   async function deleteOffering(offering) {
-    const ok = window.confirm(`Delete offering #${offering.offeringNumber}? This cannot be undone.`);
+    const ok = window.confirm(`Delete offering #${formatOfferingNumber(offering.offeringNumber)}? This cannot be undone.`);
     if (!ok) return;
     try {
       await requestJson(`${API}/${offering.id}`, { method: 'DELETE' });
@@ -407,6 +440,7 @@
       closeSubmissionModal();
       AppState.currentPage = 1;
       await loadOfferings();
+      if (AuthState.email) await loadMyOfferings();
       scrollToSection();
     } catch (err) {
       showToast(err.message);
@@ -420,7 +454,8 @@
       center,
       email: DOM.devoteeEmail.value.trim(),
       phone: DOM.devoteePhone.value.replace(/\D/g, ''),
-      content: DOM.offeringContent.value.trim()
+      content: getEditorText(),
+      contentHtml: getEditorHtml()
     };
   }
 
@@ -436,6 +471,7 @@
   function openSubmissionModal(offering) {
     resetFormErrors();
     DOM.offeringForm.reset();
+    setEditorHtml('');
     DOM.customCenterGroup.classList.add('hidden');
     const isEdit = Boolean(offering);
     DOM.editingOfferingId.value = isEdit ? offering.id : '';
@@ -453,7 +489,7 @@
     setCenter(o.center || '');
     DOM.devoteeEmail.value = o.email || '';
     DOM.devoteePhone.value = (o.phone || '').replace(/\D/g, '').slice(-10);
-    DOM.offeringContent.value = o.content || '';
+    setEditorHtml(o.contentHtml || esc(o.content || '').replace(/\n/g, '<br>'));
   }
 
   function setCenter(center) {
@@ -476,13 +512,13 @@
   }
 
   function openReaderFromOffering(offering) {
-    DOM.readerOfferingNumber.textContent = `#${offering.offeringNumber}`;
+    DOM.readerOfferingNumber.textContent = `#${formatOfferingNumber(offering.offeringNumber)}`;
     DOM.readerCenterBadge.textContent = cleanCenterName(offering.center);
     DOM.readerDate.textContent = formatDate(offering.createdAt);
     DOM.readerAuthorName.textContent = offering.devoteeName;
     DOM.readerAuthorCenter.textContent = offering.center;
-    DOM.readerOfferingContent.textContent = offering.content;
-    window.location.hash = `offering-${offering.offeringNumber}`;
+    DOM.readerOfferingContent.innerHTML = offering.contentHtml ? sanitizeEditorHtml(offering.contentHtml) : esc(offering.content || '').replace(/\n/g, '<br>');
+    window.location.hash = `offering-${formatOfferingNumber(offering.offeringNumber)}`;
     DOM.readerModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
@@ -500,7 +536,7 @@
     if (errorId === 'phoneError') document.querySelector('.phone-input-group')?.classList.add('is-invalid');
   }
   function updateWordCounter() {
-    const words = (DOM.offeringContent.value || '').trim().split(/\s+/).filter(Boolean).length;
+    const words = getEditorText().split(/\s+/).filter(Boolean).length;
     DOM.wordCounterBadge.textContent = `${words} ${words === 1 ? 'word' : 'words'}`;
   }
   function closeReaderModal() {
@@ -528,6 +564,19 @@
   function cleanCenterName(center) { return (center || '').replace(/\s*\([^)]*\)/g, '').trim(); }
   function formatDate(isoStr) { return isoStr ? new Date(isoStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''; }
   function createExcerpt(text, length = 180) { const clean = (text || '').replace(/\s+/g, ' ').trim(); return clean.length <= length ? clean : `${clean.slice(0, length)}...`; }
+  function formatOfferingNumber(n) { return String(n || '').padStart(4, '0'); }
+  function getEditorText() { return (DOM.offeringContent.innerText || '').trim(); }
+  function getEditorHtml() { return sanitizeEditorHtml(DOM.offeringContent.innerHTML); }
+  function setEditorHtml(html) { DOM.offeringContent.innerHTML = sanitizeEditorHtml(html); updateWordCounter(); }
+  function sanitizeEditorHtml(html) {
+    const doc = new DOMParser().parseFromString(`<div>${html || ''}</div>`, 'text/html');
+    const allowed = new Set(['DIV', 'P', 'BR', 'STRONG', 'B', 'EM', 'I', 'U', 'UL', 'OL', 'LI', 'BLOCKQUOTE']);
+    doc.body.querySelectorAll('*').forEach((el) => {
+      [...el.attributes].forEach((attr) => el.removeAttribute(attr.name));
+      if (!allowed.has(el.tagName)) el.replaceWith(...el.childNodes);
+    });
+    return doc.body.firstChild.innerHTML;
+  }
   function esc(str) { const div = document.createElement('div'); div.textContent = str || ''; return div.innerHTML; }
   function debounce(fn, delay) {
     let timer;

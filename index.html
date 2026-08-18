@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=20260818-mobile">
+  <link rel="stylesheet" href="css/styles.css?v=20260818-rich-session">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -188,6 +188,7 @@
               <option value="IBC Indiranagar">IBC Indiranagar</option>
               <option value="IBC Attibele">IBC Attibele</option>
               <option value="IBC Doddanekundi">IBC Doddanekundi</option>
+              <option value="ISKCON Whitefield (Land)">ISKCON Whitefield (Land)</option>
               <option value="Modadruma BACE">Modadruma BACE</option>
               <option value="Godrum BACE">Godrum BACE</option>
               <option value="Panathur BACE">Panathur BACE</option>
@@ -251,14 +252,21 @@
             <label for="offeringContent" class="form-label">Your Offering</label>
             <span class="word-counter-badge" id="wordCounterBadge">0 words</span>
           </div>
-          <textarea 
+          <div class="format-toolbar" aria-label="Offering formatting">
+            <button type="button" data-command="bold"><strong>B</strong></button>
+            <button type="button" data-command="italic"><em>I</em></button>
+            <button type="button" data-command="underline"><u>U</u></button>
+            <button type="button" data-command="insertUnorderedList">• List</button>
+            <button type="button" data-command="insertOrderedList">1. List</button>
+          </div>
+          <div 
             id="offeringContent" 
-            name="offeringContent" 
-            class="form-control offering-textarea" 
-            rows="8" 
-            placeholder="Write your prayers, glorification, and heartfelt realizations here..."
-            required
-          ></textarea>
+            class="form-control offering-textarea rich-editor" 
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            data-placeholder="Write your prayers, glorification, and heartfelt realizations here..."
+          ></div>
           <span class="field-error" id="contentError"></span>
         </div>
 
@@ -330,6 +338,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-  <script src="js/app.js?v=20260818-mobile"></script>
+  <script src="js/app.js?v=20260818-rich-session"></script>
 </body>
 </html>
