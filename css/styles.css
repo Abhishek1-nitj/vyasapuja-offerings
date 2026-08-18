@@ -392,32 +392,39 @@ body {
 }
 
 .total-submissions-card {
-  background: var(--bg-espresso);
+  background: linear-gradient(135deg, #241D17 0%, #352A22 100%);
   border-radius: var(--radius-md);
   color: var(--text-white);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: 1.5rem 1.75rem;
+  padding: 1.6rem 1.85rem;
+  box-shadow: 0 18px 38px rgba(36, 29, 23, 0.18);
 }
 
 .total-submissions-card .section-label {
   color: #CBB9A7;
+  letter-spacing: 0.18em;
+  margin-bottom: 0.45rem;
 }
 
 .total-submissions-card h2 {
-  font-family: var(--font-serif-display);
-  font-size: 2rem;
-  font-weight: 500;
-  line-height: 1.05;
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .total-submissions-card strong {
-  font-family: var(--font-serif-display);
-  font-size: clamp(3rem, 9vw, 5.5rem);
-  font-weight: 600;
-  line-height: 0.9;
+  font-family: var(--font-sans);
+  font-size: clamp(3.2rem, 8vw, 5rem);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
 }
 
 .center-summary-grid {
@@ -1272,7 +1279,7 @@ body {
   .search-result-actions .page-nav-btn { flex: 1 1 auto; min-height: 42px; }
   .center-summary-grid { grid-template-columns: 1fr; }
   .total-submissions-card { align-items: flex-start; flex-direction: column; padding: 1.25rem; }
-  .total-submissions-card h2 { font-size: 1.75rem; }
+  .total-submissions-card h2 { font-size: 1rem; }
   .total-submissions-card strong { font-size: 4rem; }
   .center-summary-toggle { min-height: 52px; padding: 0.8rem 0.85rem; }
   .section-header { align-items: flex-start; flex-direction: column; gap: 0.35rem; }
