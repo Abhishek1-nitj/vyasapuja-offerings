@@ -14,7 +14,7 @@
     submissionModal: $('submissionModal'), closeSubmissionModalBtn: $('closeSubmissionModalBtn'), cancelSubmissionBtn: $('cancelSubmissionBtn'),
     offeringForm: $('offeringForm'), editingOfferingId: $('editingOfferingId'), submissionModalTitle: $('submissionModalTitle'),
     submitOfferingBtn: $('submitOfferingBtn'), devoteeName: $('devoteeName'), centerSelect: $('centerSelect'), customCenterGroup: $('customCenterGroup'),
-    customCenterName: $('customCenterName'), devoteeEmail: $('devoteeEmail'), devoteePhone: $('devoteePhone'), offeringContent: $('offeringContent'),
+    devoteeEmail: $('devoteeEmail'), devoteePhone: $('devoteePhone'), offeringContent: $('offeringContent'),
     wordCounterBadge: $('wordCounterBadge'), searchForm: $('offeringSearchForm'), searchInput: $('offeringSearchInput'), searchResults: $('searchResults'),
     centerSummaryGrid: $('centerSummaryGrid'), centerOfferingsModal: $('centerOfferingsModal'),
     closeCenterOfferingsModalBtn: $('closeCenterOfferingsModalBtn'), centerOfferingsTitle: $('centerOfferingsTitle'),
@@ -178,21 +178,16 @@
   }
 
   function bindEvents() {
-    DOM.mainSubmitBtn.addEventListener('click', () => {
-      if (requireGoogle(() => openSubmissionModal(), 'Sign in to submit your offering.')) openSubmissionModal();
-    });
-    DOM.emptyStateSubmitBtn.addEventListener('click', () => {
-      if (requireGoogle(() => openSubmissionModal(), 'Sign in to submit your offering.')) openSubmissionModal();
-    });
+    DOM.mainSubmitBtn.addEventListener('click', startSubmission);
+    DOM.emptyStateSubmitBtn.addEventListener('click', startSubmission);
     DOM.editMineBtn.addEventListener('click', () => {
       if (requireGoogle(loadMyOfferings, 'Sign in to edit your offering.')) loadMyOfferings();
     });
-    DOM.signedInSubmitBtn.addEventListener('click', () => openSubmissionModal());
+    DOM.signedInSubmitBtn.addEventListener('click', startSubmission);
     DOM.logoutBtn.addEventListener('click', logout);
     DOM.closeAuthModalBtn.addEventListener('click', closeAuthModal);
     DOM.closeSubmissionModalBtn.addEventListener('click', closeSubmissionModal);
     DOM.cancelSubmissionBtn.addEventListener('click', closeSubmissionModal);
-    DOM.centerSelect.addEventListener('change', toggleCustomCenter);
     DOM.devoteePhone.addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
     DOM.offeringContent.addEventListener('input', updateWordCounter);
     DOM.offeringContent.addEventListener('paste', () => setTimeout(() => setEditorHtml(sanitizeEditorHtml(DOM.offeringContent.innerHTML)), 0));
@@ -215,12 +210,6 @@
     [DOM.authModal, DOM.submissionModal, DOM.centerOfferingsModal, DOM.readerModal].forEach((modal) => modal.addEventListener('click', (e) => {
       if (e.target === modal) { modal.classList.add('hidden'); document.body.style.overflow = ''; }
     }));
-  }
-
-  function toggleCustomCenter(e) {
-    const custom = e.target.value === '__OTHER__';
-    DOM.customCenterGroup.classList.toggle('hidden', !custom);
-    if (custom) DOM.customCenterName.focus(); else DOM.customCenterName.value = '';
   }
 
   function renderFeedAndPagination() {
@@ -371,10 +360,32 @@
   async function loadMyOfferings() {
     DOM.myOfferingsPanel.textContent = 'Loading your offering...';
     try {
-      renderMyOfferings((await requestJson(`${API}/mine`)).offerings || []);
+      const offerings = (await requestJson(`${API}/mine`)).offerings || [];
+      renderMyOfferings(offerings);
+      updateSignedInSubmitState(offerings);
     } catch (e) {
       DOM.myOfferingsPanel.textContent = e.message;
     }
+  }
+
+  async function startSubmission() {
+    if (!requireGoogle(startSubmission, 'Sign in to submit your offering.')) return;
+    try {
+      const offerings = (await requestJson(`${API}/mine`)).offerings || [];
+      renderMyOfferings(offerings);
+      updateSignedInSubmitState(offerings);
+      if (offerings.length) {
+        showToast('You already submitted one offering. Please edit your existing offering.');
+        return;
+      }
+      openSubmissionModal();
+    } catch (e) {
+      showToast(e.message);
+    }
+  }
+
+  function updateSignedInSubmitState(offerings) {
+    DOM.signedInSubmitBtn.classList.toggle('hidden', offerings.length > 0);
   }
 
   function renderMyOfferings(offerings) {
@@ -448,10 +459,9 @@
   }
 
   function getFormPayload() {
-    const center = DOM.centerSelect.value === '__OTHER__' ? DOM.customCenterName.value.trim() : DOM.centerSelect.value;
     return {
       devoteeName: DOM.devoteeName.value.trim(),
-      center,
+      center: DOM.centerSelect.value,
       email: DOM.devoteeEmail.value.trim(),
       phone: DOM.devoteePhone.value.replace(/\D/g, ''),
       content: getEditorText(),
@@ -494,9 +504,7 @@
 
   function setCenter(center) {
     const found = [...DOM.centerSelect.options].some((opt) => opt.value === center);
-    DOM.centerSelect.value = found ? center : '__OTHER__';
-    DOM.customCenterGroup.classList.toggle('hidden', found);
-    DOM.customCenterName.value = found ? '' : center;
+    DOM.centerSelect.value = found ? center : '';
   }
 
   function closeSubmissionModal() {
@@ -561,7 +569,7 @@
     DOM.toastContainer.appendChild(toast);
     setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(12px)'; setTimeout(() => toast.remove(), 250); }, 2800);
   }
-  function cleanCenterName(center) { return (center || '').replace(/\s*\([^)]*\)/g, '').trim(); }
+  function cleanCenterName(center) { return (center || '').trim(); }
   function formatDate(isoStr) { return isoStr ? new Date(isoStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''; }
   function createExcerpt(text, length = 180) { const clean = (text || '').replace(/\s+/g, ' ').trim(); return clean.length <= length ? clean : `${clean.slice(0, length)}...`; }
   function formatOfferingNumber(n) { return String(n || '').padStart(4, '0'); }

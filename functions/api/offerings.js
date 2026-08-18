@@ -72,6 +72,9 @@ export async function onRequestPost({ request, env }) {
   const error = validate(body);
   if (error) return json({ error }, 400);
 
+  const existing = await env.DB.prepare('SELECT id FROM offerings WHERE owner_google_sub = ? LIMIT 1').bind(owner.sub).first();
+  if (existing) return json({ error: 'You have already submitted one offering. Please edit your existing offering.' }, 409);
+
   const max = await env.DB.prepare('SELECT COALESCE(MAX(offering_number), 0) AS n FROM offerings').first();
   const id = `off-${crypto.randomUUID()}`;
   const phoneDigits = digits(body.phone);

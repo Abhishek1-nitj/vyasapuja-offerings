@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=20260818-rich-session">
+  <link rel="stylesheet" href="css/styles.css?v=20260818-one-offering">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -58,7 +58,7 @@
           </div>
           <div class="signed-in-actions">
             <button id="signedInSubmitBtn" class="btn-submit-hero btn-dark">
-              <span>Submit another offering</span>
+              <span>Submit offering</span>
               <span class="hero-btn-arrow">→</span>
             </button>
             <button id="logoutBtn" class="btn-logout" type="button">Logout</button>
@@ -176,38 +176,17 @@
             <label for="centerSelect" class="form-label">Center</label>
             <select id="centerSelect" name="center" class="form-control" required>
               <option value="" disabled selected>Select center...</option>
-              <option value="IBC AECS Layout">IBC AECS Layout</option>
-              <option value="IBC Inner Circle">IBC Inner Circle</option>
-              <option value="IBC Kannamangala">IBC Kannamangala</option>
-              <option value="IBC Panathur">IBC Panathur</option>
-              <option value="IBC Kaggadaspura">IBC Kaggadaspura</option>
-              <option value="IBC Sarjapur">IBC Sarjapur</option>
-              <option value="IBC Channasandra">IBC Channasandra</option>
-              <option value="IBC Petanahalli">IBC Petanahalli</option>
-              <option value="IBC Marathahalli">IBC Marathahalli</option>
-              <option value="IBC Indiranagar">IBC Indiranagar</option>
-              <option value="IBC Attibele">IBC Attibele</option>
-              <option value="IBC Doddanekundi">IBC Doddanekundi</option>
               <option value="ISKCON Whitefield (Land)">ISKCON Whitefield (Land)</option>
-              <option value="Modadruma BACE">Modadruma BACE</option>
-              <option value="Godrum BACE">Godrum BACE</option>
-              <option value="Panathur BACE">Panathur BACE</option>
-              <option value="Panathur Lotus BACE">Panathur Lotus BACE</option>
-              <option value="Antardvipa BACE">Antardvipa BACE</option>
-              <option value="Rudradvipa BACE">Rudradvipa BACE</option>
-              <option value="UVCE College BACE">UVCE College BACE</option>
-              <option value="Godrum Hopeform BACE">Godrum Hopeform BACE</option>
-              <option value="Bellandur BACE">Bellandur BACE</option>
-              <option value="__OTHER__">+ Other / Custom Center</option>
+              <option value="IBC AECS">IBC AECS</option>
+              <option value="IBC Inner Circle, Chennasandra, PLH">IBC Inner Circle, Chennasandra, PLH</option>
+              <option value="IBC Kannamangala and Hoskote">IBC Kannamangala and Hoskote</option>
+              <option value="IBC Panathur and Tippasandra">IBC Panathur and Tippasandra</option>
+              <option value="IBC Sarjapur and Attibele">IBC Sarjapur and Attibele</option>
+              <option value="IBC Kaggadaspura">IBC Kaggadaspura</option>
+              <option value="IYF Hopefarm">IYF Hopefarm</option>
+              <option value="IYMF AECS, Marathahalli, Panathur">IYMF AECS, Marathahalli, Panathur</option>
             </select>
-            <div id="customCenterGroup" class="custom-center-input hidden">
-              <input 
-                type="text" 
-                id="customCenterName" 
-                class="form-control mt-2" 
-                placeholder="Enter center name..."
-              >
-            </div>
+            <div id="customCenterGroup" class="custom-center-input hidden"></div>
             <span class="field-error" id="centerError"></span>
           </div>
         </div>
@@ -304,7 +283,7 @@
         <div class="reader-meta-top">
           <span class="reader-num" id="readerOfferingNumber">01</span>
           <span class="reader-divider-dot">·</span>
-          <span class="reader-center" id="readerCenterBadge">IBC AECS Layout</span>
+          <span class="reader-center" id="readerCenterBadge">IBC AECS</span>
           <span class="reader-divider-dot">·</span>
           <span class="reader-date" id="readerDate">Aug 17, 2026</span>
         </div>
@@ -314,7 +293,7 @@
       <div class="modal-body reader-modal-body">
         <div class="reader-author-section">
           <h2 id="readerAuthorName" class="reader-author-title">Devotee Name</h2>
-          <span id="readerAuthorCenter" class="reader-location-sub">IBC AECS Layout</span>
+          <span id="readerAuthorCenter" class="reader-location-sub">IBC AECS</span>
         </div>
 
         <div class="reader-ornament">❖ ❖ ❖</div>
@@ -338,6 +317,6 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
-  <script src="js/app.js?v=20260818-rich-session"></script>
+  <script src="js/app.js?v=20260818-one-offering"></script>
 </body>
 </html>
