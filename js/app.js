@@ -8,7 +8,7 @@
     mainSubmitBtn: $('mainSubmitBtn'), editMineBtn: $('editMineBtn'), preSignInActions: $('preSignInActions'),
     signedInPanel: $('signedInPanel'), signedInAvatar: $('signedInAvatar'), signedInName: $('signedInName'),
     signedInEmail: $('signedInEmail'), signedInSubmitBtn: $('signedInSubmitBtn'), logoutBtn: $('logoutBtn'), myOfferingsPanel: $('myOfferingsPanel'),
-    totalOfferingsCountBadge: $('totalOfferingsCountBadge'), offeringsGrid: $('offeringsGrid'),
+    totalOfferingsCountBadge: $('totalOfferingsCountBadge'), totalSubmissionsCount: $('totalSubmissionsCount'), offeringsGrid: $('offeringsGrid'),
     emptyOfferingsState: $('emptyOfferingsState'), emptyStateSubmitBtn: $('emptyStateSubmitBtn'), paginationWrapper: $('paginationWrapper'),
     paginationInfo: $('paginationInfo'), paginationNumbers: $('paginationNumbers'), prevPageBtn: $('prevPageBtn'), nextPageBtn: $('nextPageBtn'),
     submissionModal: $('submissionModal'), closeSubmissionModalBtn: $('closeSubmissionModalBtn'), cancelSubmissionBtn: $('cancelSubmissionBtn'),
@@ -216,6 +216,7 @@
     const list = [...AppState.offerings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     const total = list.length;
     DOM.totalOfferingsCountBadge.textContent = `${total} ${total === 1 ? 'Offering' : 'Offerings'}`;
+    DOM.totalSubmissionsCount.textContent = total;
     const totalPages = Math.ceil(total / AppState.pageSize) || 1;
     if (AppState.currentPage > totalPages) AppState.currentPage = totalPages;
     const startIndex = (AppState.currentPage - 1) * AppState.pageSize;

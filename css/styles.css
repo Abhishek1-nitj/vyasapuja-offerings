@@ -391,6 +391,35 @@ body {
   box-shadow: var(--shadow-card);
 }
 
+.total-submissions-card {
+  background: var(--bg-espresso);
+  border-radius: var(--radius-md);
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem 1.75rem;
+}
+
+.total-submissions-card .section-label {
+  color: #CBB9A7;
+}
+
+.total-submissions-card h2 {
+  font-family: var(--font-serif-display);
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.total-submissions-card strong {
+  font-family: var(--font-serif-display);
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  font-weight: 600;
+  line-height: 0.9;
+}
+
 .center-summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -1242,6 +1271,9 @@ body {
   .search-result-actions { width: 100%; flex-wrap: wrap; }
   .search-result-actions .page-nav-btn { flex: 1 1 auto; min-height: 42px; }
   .center-summary-grid { grid-template-columns: 1fr; }
+  .total-submissions-card { align-items: flex-start; flex-direction: column; padding: 1.25rem; }
+  .total-submissions-card h2 { font-size: 1.75rem; }
+  .total-submissions-card strong { font-size: 4rem; }
   .center-summary-toggle { min-height: 52px; padding: 0.8rem 0.85rem; }
   .section-header { align-items: flex-start; flex-direction: column; gap: 0.35rem; }
   .offering-card { align-items: flex-start; flex-direction: column; }
